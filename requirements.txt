@@ -1,0 +1,13 @@
+
+setuptools 
+wheel
+pandas 
+numpy 
+spacy 
+textblob
+scikit-learn
+scipy
+transformers
+nltk
+ipykernel
+matplotlib
