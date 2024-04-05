@@ -41,28 +41,82 @@ def predict(s: str):
     #     return 1 # neutral
 
 
+#%% 
+import spacy 
+
+# TODO select the components that are needed actually 
+# nlp = spacy.load("en_core_web_sm", enable=["tok2vec", "tagger", "parser", "ner", "lemmatizer"])
+nlp = spacy.load("en_core_web_sm")
+
+def preprocess_w_spacy(s: str): 
+    s = nlp(s)
+    return s
+
+def preprocess_list_w_spacy(str_list: list): 
+    return nlp(str_list)
+
 #%%
 dataset_path = "datasets"
 task_path = "sentiment"
 
 test_name =  "test_text.txt"
+train_name = "train_text.txt"
+validation_name = "val_text.txt"
+
+train_labels_name = "train_labels.txt"
+validation_labels_name = "val_text.txt"
 test_labels_gold_name  = "test_labels.txt"
 
-gold_test_labels_path = os.path.join(dataset_path, task_path, test_labels_gold_name)
+train_text_path = os.path.join(dataset_path, task_path, train_name)
+validation_text_path = os.path.join(dataset_path, task_path, validation_name)
 test_text_path = os.path.join(dataset_path, task_path, test_name)
 
+train_labels_path = os.path.join(dataset_path, task_path, train_labels_name)
+validation_labels_path = os.path.join(dataset_path, task_path, validation_labels_name)
+gold_test_labels_path = os.path.join(dataset_path, task_path, test_labels_gold_name)
+
+
+train_labels_str = open(train_labels_path).read().split("\n")[:-1]
+validation_labels_str = open(validation_labels_path).read().split("\n")[:-1]
 test_labels_str = open(gold_test_labels_path).read().split("\n")[:-1]
+
+train_data_raw = open(train_text_path).read().split("\n")[:-1]
+validation_data_raw = open(validation_text_path).read().split("\n")[:-1]
 test_data_raw = open(test_text_path).read().split("\n")[:-1]
 
+train_labels = [int(x) for x in train_labels_str]
+validation_labels = [int(x) for x in validation_labels_str]
 test_labels_gold = [int(x) for x in test_labels_str]
+
 
 #%%
 
-def preprocess_tweets(s: str) -> str:
-    s = s.replace("@user", "")
+def clean_text(s: str): 
+    return s.replace("@user", "")
+
+def preprocess_tweets_old(s: str) -> str:
+    s = clean_text(s)
     return s
 
-test_data = [preprocess_tweets(s) for s in test_data_raw]
+def preprocess_tweets(ls: list):
+    ls = [clean_text(s) for s in ls]
+    ls = nlp(ls) # returning an iterator (could do same for clean text)
+    return ls
+
+
+# %%
+# train_data = 
+
+
+# %%
+
+# Train the models here 
+
+
+
+# %% 
+
+test_data = [preprocess_tweets_old(s) for s in test_data_raw]
 
 
 # %%
@@ -83,4 +137,3 @@ cm = confusion_matrix(test_labels_gold, test_data_sentiments)
 print(cm)
 cm_disp = ConfusionMatrixDisplay(cm).plot()
 
-# %%
