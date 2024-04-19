@@ -53,7 +53,7 @@ def preprocess_w_spacy(s: str):
     return s
 
 def preprocess_list_w_spacy(str_list: list): 
-    return nlp(str_list)
+    return nlp.pipe(str_list)
 
 #%%
 dataset_path = "datasets"
@@ -64,7 +64,7 @@ train_name = "train_text.txt"
 validation_name = "val_text.txt"
 
 train_labels_name = "train_labels.txt"
-validation_labels_name = "val_text.txt"
+validation_labels_name = "val_labels.txt"
 test_labels_gold_name  = "test_labels.txt"
 
 train_text_path = os.path.join(dataset_path, task_path, train_name)
@@ -100,19 +100,30 @@ def preprocess_tweets_old(s: str) -> str:
 
 def preprocess_tweets(ls: list):
     ls = [clean_text(s) for s in ls]
-    ls = nlp(ls) # returning an iterator (could do same for clean text)
+    ls = preprocess_list_w_spacy(ls) # returning an iterator (could do same for clean text)
     return ls
 
 
+# %% 
+train_data_preprocessed = preprocess_tweets(ls=train_data_raw) 
+validation_data_preprocessed = preprocess_tweets(ls=validation_data_raw)
+test_data_preprocessed = preprocess_tweets(ls=test_data_raw)
+
 # %%
-# train_data = 
-
-
-# %%
-
+for i in range(10):
+    x = next(train_data_preprocessed)
 # Train the models here 
 
+#%%
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.svm import SVC
 
+
+sklearn_pipe = Pipeline(steps=[
+    ('select', SelectKBest(k=2)),
+    ('clf', LogisticRegression())])
 
 # %% 
 
