@@ -34,7 +34,7 @@ test_labels_str = open(gold_test_labels_path).read().split("\n")[:-1]
 
 train_data_raw = open(train_text_path).read().split("\n")[:-1]
 validation_data_raw = open(validation_text_path).read().split("\n")[:-1]
-#test_data_raw = open(test_text_path).read().split("\n")[:-1]
+test_data_raw = open(test_text_path, encoding='utf-8').read().split("\n")[:-1]
 
 train_labels = [int(x) for x in train_labels_str]
 validation_labels = [int(x) for x in validation_labels_str]
@@ -45,7 +45,7 @@ test_labels_gold = [int(x) for x in test_labels_str]
 # functions for the pipeline
 
 def clean_text(data): 
-    data_cleaned = [string.replace("@user", "")for string in data]
+    data_cleaned = [string.replace("@user ", "")for string in data]
     data_cleaned = [string.replace("u2019", "")for string in data_cleaned]
     return data_cleaned
 
@@ -81,15 +81,15 @@ pipeline = Pipeline([
 
 
 data_files = {'train_data_raw': 'preprocessed_data/preprocessed_train.txt',
-              'validation_data_raw': 'preprocessed_data/preprocessed_validation.txt'}
-              #'test_data_raw': 'preprocessed_data/preprocessed_test.txt'}
+              'validation_data_raw': 'preprocessed_data/preprocessed_validation.txt',
+              'test_data_raw': 'preprocessed_data/preprocessed_test.txt'}
 
 
 
 for file, export_path in data_files.items():#, test_data_raw]:
     tweets_preprocessed = pipeline.fit_transform(eval(file))
 
-    with open(export_path, 'w') as file:
+    with open(export_path, 'w', encoding='utf-8') as file:
         for item in tweets_preprocessed:
             file.write(str(item) + '\n')
 
