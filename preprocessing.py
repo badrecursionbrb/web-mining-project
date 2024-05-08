@@ -78,7 +78,22 @@ pipeline = Pipeline([
 
 
 #%%
-tweets_preprocessed = pipeline.fit_transform(train_data_raw)
+
+
+data_files = {'train_data_raw': 'preprocessed_data/preprocessed_train.txt',
+              'validation_data_raw': 'preprocessed_data/preprocessed_validation.txt'}
+              #'test_data_raw': 'preprocessed_data/preprocessed_test.txt'}
+
+
+
+for file, export_path in data_files.items():#, test_data_raw]:
+    tweets_preprocessed = pipeline.fit_transform(eval(file))
+
+    with open(export_path, 'w') as file:
+        for item in tweets_preprocessed:
+            file.write(str(item) + '\n')
+
+
 
 
 # %%
@@ -90,5 +105,3 @@ export_path = 'preprocessed_data/preprocessed_train.txt'
 with open(export_path, 'w') as file:
     for item in tweets_preprocessed:
         file.write(str(item) + '\n')
-
-
