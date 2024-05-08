@@ -109,9 +109,22 @@ train_data_preprocessed = preprocess_tweets(ls=train_data_raw)
 validation_data_preprocessed = preprocess_tweets(ls=validation_data_raw)
 test_data_preprocessed = preprocess_tweets(ls=test_data_raw)
 
+X_train = train_data_preprocessed
+X_valid = validation_data_preprocessed
+X_test = test_data_preprocessed
+
+y_train = train_labels
+y_valid = validation_labels
+y_test = test_labels_gold
+
 # %%
 for i in range(10):
     x = next(train_data_preprocessed)
+    
+#%% 
+# for i in range(10):
+#     print(X_train[i])    
+
 # Train the models here 
 
 #%%
@@ -119,12 +132,38 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
+from sklearn.naive_bayes import MultinomialNB
+import sklearn.pipeline
 
 
-sklearn_pipe = Pipeline(steps=[
-    ('select', SelectKBest(k=2)),
-    ('clf', LogisticRegression())])
 
+
+#%%
+
+class SpacyVectorizer():
+    def __init__(self) -> None:
+        pass
+    
+    def fit(self, doc):
+        
+        return 
+    
+    def transform(self): 
+        return  
+
+# Create a customizable NLP pipeline
+def create_pipeline(vect=CountVectorizer(), clf=MultinomialNB()) -> sklearn.pipeline.Pipeline:
+    pipeline = Pipeline([
+        ('vectorizer', vect),
+        ('classifier', clf)
+    ])
+    return pipeline
+
+pipeline = create_pipeline(vect=CountVectorizer(), clf= MultinomialNB())
+
+pipeline.fit(train_data_preprocessed, train_labels)
+
+predictions = pipeline.predict(validation_data_preprocessed)
 # %% 
 
 test_data = [preprocess_tweets_old(s) for s in test_data_raw]
