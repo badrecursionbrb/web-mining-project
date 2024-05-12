@@ -4,29 +4,21 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score
+from functions import load_data, load_datasets
 
-#%%
-# Load preprocessed tweets
-def load_data(tweets_path, labels_path):
-    with open(tweets_path, 'r', encoding='utf-8') as file:
-        tweets = file.readlines()
-    with open(labels_path, 'r', encoding='utf-8') as file:
-        labels = file.readlines()
-        labels = [int(label.strip()) for label in labels]
-    return pd.DataFrame({'tweet': tweets, 'label': labels})
+# # Paths to the data
+# train_tweets_path = './preprocessed_data/preprocessed_train.txt'
+# train_labels_path = './datasets/sentiment/train_labels.txt'
+# val_tweets_path = './preprocessed_data/preprocessed_validation.txt'
+# val_labels_path = './datasets/sentiment/val_labels.txt'
+# test_tweets_path = './preprocessed_data/preprocessed_test.txt'
+# test_labels_path = './datasets/sentiment/test_labels.txt'
 
-# Paths to the data
-train_tweets_path = './preprocessed_data/preprocessed_train.txt'
-train_labels_path = './datasets/sentiment/train_labels.txt'
-val_tweets_path = './preprocessed_data/preprocessed_validation.txt'
-val_labels_path = './datasets/sentiment/val_labels.txt'
-test_tweets_path = './preprocessed_data/preprocessed_test.txt'
-test_labels_path = './datasets/sentiment/test_labels.txt'
-
-# Load datasets
-train_data = load_data(train_tweets_path, train_labels_path)
-val_data = load_data(val_tweets_path, val_labels_path)
-test_data = load_data(test_tweets_path, test_labels_path)
+# # Load datasets
+# train_data = load_data(train_tweets_path, train_labels_path)
+# val_data = load_data(val_tweets_path, val_labels_path)
+# test_data = load_data(test_tweets_path, test_labels_path)
+train_data, val_data, test_data = load_datasets()
 
 #%%
 # Create a TF-IDF vectorizer

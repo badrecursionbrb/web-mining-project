@@ -11,3 +11,5 @@ transformers
 nltk
 ipykernel
 matplotlib
+emoji
+gensim
