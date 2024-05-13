@@ -5,9 +5,9 @@ LABELS_FOLDER = './datasets'
 
 TRAIN_TWEETS_PATH = TWEETS_FOLDER + '/preprocessed_train'
 TRAIN_LABELS_PATH = LABELS_FOLDER + '/sentiment/train_labels.txt'
-VAL_TWEETS_PATH = TWEETS_FOLDER + '/preprocessed_validation.txt'
+VAL_TWEETS_PATH = TWEETS_FOLDER + '/preprocessed_validation'
 VAL_LABELS_PATH = LABELS_FOLDER + '/sentiment/val_labels.txt'
-TEST_TWEETS_PATH = TWEETS_FOLDER + '/preprocessed_test.txt'
+TEST_TWEETS_PATH = TWEETS_FOLDER + '/preprocessed_test'
 TEST_LABELS_PATH = LABELS_FOLDER + '/sentiment/test_labels.txt'
 
 # Load preprocessed tweets
