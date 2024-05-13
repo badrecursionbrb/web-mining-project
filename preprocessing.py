@@ -52,11 +52,7 @@ spacy_corpus= "en_core_web_sm"
 
 # functions for the pipeline
 def replace_emoji(emoji_letter):
-    return emoji.demojize(emoji_letter).replace(":", "").replace("_", " ") # TODO check if should replace the lowercase by spaces
-
-def recognize_and_convert_emoji(emoji_token): 
-    # TODO emojji recognition
-    return emoji_token
+    return emoji.demojize(emoji_letter).replace(":", "").replace("_", "") # TODO check if should replace the lowercase by spaces
 
 def emoji_to_name(data):
     data_cleaned = []
@@ -68,7 +64,8 @@ def emoji_to_name(data):
         #     else:
         #         doc_cleaned.append(doc_cleaned)
         cleaned_doc = [replace_emoji(token) if emoji.is_emoji(token) else token for token in doc]
-        data_cleaned.append([recognize_and_convert_emoji(token) for token in cleaned_doc])
+        # data_cleaned.append([recognize_and_convert_emoji(token) for token in cleaned_doc])
+        data_cleaned.append(cleaned_doc)
         # data_cleaned.append(doc_cleaned)
     return data_cleaned 
 
@@ -90,7 +87,7 @@ def remove_punctuation(data):
     translation_table = str.maketrans("", "", string.punctuation)
     data_cleaned = []
     for doc in data: 
-        data_cleaned.append([str(token).translate(translation_table).replace("'", "") for token in doc])
+        data_cleaned.append([str(token).translate(translation_table).replace("'", "").replace("’", "") for token in doc])
     return data_cleaned
 
 
@@ -174,8 +171,8 @@ PIPELINE_DICT = {
 # create the pipeline
 pipeline = Pipeline([
     ('cleaner', clean_transformer),
-    #('emoji', emoji_transformer),
     ('lemmatizer_tokenizer', lemmatizer_tokenizer_transformer),
+    ('emoji', emoji_transformer),
     ('punctuation', punctuation_transformer),
     ('lowercase', lowercase_transformer),
     ('stopwords', stopword_transformer),
@@ -195,9 +192,9 @@ def create_pipeline(pipeline_dict: dict={'cleaner': {}, 'lowercase': {}}):
 #%%
 folder_str =  'preprocessed_data'
 data_files = {
-            'train_data_raw': folder_str + '/preprocessed_train.txt',
-            'validation_data_raw': folder_str + '/preprocessed_validation.txt',
-            'test_data_raw': folder_str + '/preprocessed_test.txt'
+            'train_data_raw': folder_str + '/preprocessed_train',
+            'validation_data_raw': folder_str + '/preprocessed_validation',
+            'test_data_raw': folder_str + '/preprocessed_test'
             }
 
 
@@ -205,8 +202,15 @@ for file, export_path in data_files.items():#, test_data_raw]:
     print("processing file: ".format(str(export_path)))
     tweets_preprocessed = pipeline.fit_transform(eval(file))
 
-    with open(export_path, 'w', encoding='utf-8') as file:
+    with open(export_path + '.txt', 'w', encoding='utf-8') as file:
         for item in tweets_preprocessed:
+            file.write(str(item) + '\n')
+    
+    tweets_preprocessed_joined = []
+    for doc in tweets_preprocessed:
+        tweets_preprocessed_joined.append(" ".join(doc))
+    with open(export_path + '_joined' + '.txt', 'w', encoding='utf-8') as file:
+        for item in tweets_preprocessed_joined:
             file.write(str(item) + '\n')
 
 
