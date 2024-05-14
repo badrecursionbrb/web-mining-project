@@ -16,5 +16,6 @@ gensim
 torch
 torchvision
 tensorflow
-transformersp
+transformers
 accelerate
+ipykernel
