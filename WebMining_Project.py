@@ -10,6 +10,23 @@ from torch.utils.data import DataLoader
 from transformers import AdamW
 from functions import load_datasets
 
+#%% 
+USE_GPU = True
+print(torch.__version__)
+print("checking if GPU is available ")
+print(torch.cuda.is_available())
+
+print("check number of GPUs available on machine and number of devices used ")
+print(torch.cuda.device_count())
+#print(torch.cuda.current_device())
+
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+    print(f"GPU: {torch.cuda.get_device_name(0)} is available (CUDA device name).")
+    print(torch.cuda.get_device_properties(0))
+else:
+    device = torch.device("cpu")
+    print("GPU not available, training on CPU")
 # %%
 # train_text = pd.read_table('train_text.txt', header=None)
 # train_text = train_text.rename(columns={0: "Tweets"})
@@ -94,7 +111,14 @@ class Dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
-        item['labels'] = torch.tensor(self.labels[idx])
+        y_matrix = torch.tensor(self.labels[idx])
+        if USE_GPU:
+            # print("using gpu")
+            #item = {key: x_train.cuda() for key, x_train in item.items()}
+            #y_matrix = y_matrix.cuda()
+            item = {key: x_train.to(device) for key, x_train in item.items()}
+            y_matrix = y_matrix.to(device)
+        item['labels'] = y_matrix
         return item
 
     def __len__(self):
@@ -106,27 +130,34 @@ val_dataset = Dataset(val_encodings, val_labels)
 test_dataset = Dataset(test_encodings, test_labels)
 
 # %%
+
+# dataloader_pin_memory set to False due to GPU not working otherwise
 training_args = TrainingArguments(
     output_dir='./results',
     num_train_epochs=3,
-    per_device_train_batch_size=16,
+    per_device_train_batch_size=32,
     per_device_eval_batch_size=64,
     warmup_steps=500,
     learning_rate=5e-5,
     weight_decay=0.01,
     logging_dir='./logs',
-    logging_steps=10
+    logging_steps=30,
+    #gradient_accumulation_steps=2,
+    dataloader_pin_memory = False
 )
 
 # %%
+
 trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
-    eval_dataset=val_dataset
+    eval_dataset=val_dataset,
 )
 
-trainer.train()
+trainer_res = trainer.train()
+
+
 # %%
 '''device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device)
