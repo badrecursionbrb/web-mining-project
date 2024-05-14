@@ -1,73 +1,70 @@
 # %%
 import pandas as pd
 import torch
-from tensorflow.keras.optimizers import Adam
+#from tensorflow.keras.optimizers import Adam
 from transformers import Trainer, TrainingArguments
 from torch.utils.data import Dataset
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
 from scipy.special import softmax
 from torch.utils.data import DataLoader
 from transformers import AdamW
+from functions import load_datasets
 
 # %%
-train_text = pd.read_table('train_text.txt', header=None)
-train_text = train_text.rename(columns={0: "Tweets"})
+# train_text = pd.read_table('train_text.txt', header=None)
+# train_text = train_text.rename(columns={0: "Tweets"})
 
-val_text = pd.read_table('val_text.txt', header=None)
-val_text = val_text.rename(columns={0: "Tweets"})
+# val_text = pd.read_table('val_text.txt', header=None)
+# val_text = val_text.rename(columns={0: "Tweets"})
 
-test_text = pd.read_table('test_text.txt', header=None)
-test_text = test_text.rename(columns={0: "Tweets"})
+# test_text = pd.read_table('test_text.txt', header=None)
+# test_text = test_text.rename(columns={0: "Tweets"})
 
-train_labels = pd.read_table('train_labels.txt', header=None)
-train_labels = train_labels.rename(columns={0: "Label"})
+# train_labels = pd.read_table('train_labels.txt', header=None)
+# train_labels = train_labels.rename(columns={0: "Label"})
 
-val_labels = pd.read_table('val_labels.txt', header=None)
-val_labels = val_labels.rename(columns={0: "Label"})
+# val_labels = pd.read_table('val_labels.txt', header=None)
+# val_labels = val_labels.rename(columns={0: "Label"})
 
-test_labels = pd.read_table('test_labels.txt', header=None)
-test_labels = test_labels.rename(columns={0: "Label"})
+# test_labels = pd.read_table('test_labels.txt', header=None)
+# test_labels = test_labels.rename(columns={0: "Label"})
+
+train_data, val_data, test_data = load_datasets()
+
+train_text = train_data["tweet"].to_list() 
+val_text = val_data["tweet"].to_list()
+test_text = test_data["tweet"].to_list()
+
+train_labels = train_data["label"].to_list()
+val_labels = val_data["label"].to_list()
+test_labels = test_data["label"].to_list()
+
 
 # %%
 print("train_text: " + str(len(train_text)) + ", train_labels: " + str(len(train_labels)) + ", val_text: " + str(len(val_text)) 
       + ", val_labels: " + str(len(val_labels)) + ", test_text: " + str(len(test_text)) + ", test_labels: " + str(len(test_labels)))
 
-# %%
-
 
 # %%
-# Preprocess text (username and link placeholders)
-def preprocess(text):
-    new_text = []
-    for t in text.split(" "):
-        t = '@user' if t.startswith('@') and len(t) > 1 else t
-        t = 'http' if t.startswith('http') else t
-        new_text.append(t)
-    return " ".join(new_text)
+# def tokenize_function(text):
+#   tokenized_list = []
 
+#   # extract text
+#   for t in text:
 
-# %%
-def tokenize_function(text):
-  tokenized_list = []
+#       # tokenize and truncate text
+#       #tokenizer.truncation_side = "right"
+#       #tokenizer.padding_side = "right"
+#       tokenized_text = tokenizer(
+#           preprocessed_text,
+#           return_tensors='pt',
+#           truncation=True,
+#           padding=True,
+#           max_length=512
+#           )
+#       tokenized_list.append(tokenized_text)
 
-  # extract text
-  for t in text:
-      # preprocess text with function
-      preprocessed_text = preprocess(t)
-
-      # tokenize and truncate text
-      #tokenizer.truncation_side = "right"
-      #tokenizer.padding_side = "right"
-      tokenized_text = tokenizer(
-          preprocessed_text,
-          return_tensors='pt',
-          truncation=True,
-          padding=True,
-          max_length=512
-          )
-      tokenized_list.append(tokenized_text)
-
-  return tokenized_list
+#   return tokenized_list
 
 # %%
 model_name = "cardiffnlp/twitter-roberta-base-sentiment-latest"
@@ -81,12 +78,14 @@ model = AutoModelForSequenceClassification.from_pretrained(model_name)
 # test_encodings = tokenize_function(test_text.to_string())
 
 # %%
-train_encodings = tokenizer(train_text.to_string(), padding=True, truncation=True, max_length=512)
-val_encodings = tokenizer(val_text.to_string(), padding=True, truncation=True, max_length=512)
-test_encodings = tokenizer(test_text.to_string(), padding=True, truncation=True, max_length=512)
+max_length = 280
+train_encodings = tokenizer(train_text, padding=True, truncation=True, max_length=max_length)
+val_encodings = tokenizer(val_text, padding=True, truncation=True, max_length=max_length)
+test_encodings = tokenizer(test_text, padding=True, truncation=True, max_length=max_length)
 
 # %%
-print(train_encodings)
+print(train_encodings['input_ids'][2524])
+
 # %%
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, encodings, labels):

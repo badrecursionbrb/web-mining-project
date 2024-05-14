@@ -13,3 +13,8 @@ ipykernel
 matplotlib
 emoji
 gensim
+torch
+torchvision
+tensorflow
+transformersp
+accelerate
