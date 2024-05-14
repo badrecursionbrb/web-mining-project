@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score
-from functions import load_data, load_datasets
+from functions import load_data, load_datasets, vectorize
 
 # # Paths to the data
 # train_tweets_path = './preprocessed_data/preprocessed_train.txt'
@@ -24,10 +24,15 @@ train_data, val_data, test_data = load_datasets()
 # Create a TF-IDF vectorizer
 vectorizer = TfidfVectorizer(max_features=1000)
 
+
 # Fit and transform the training data
 X_train = vectorizer.fit_transform(train_data['tweet'])
 
 # Transform the validation and test data
+X_val = vectorizer.transform(val_data['tweet'])
+X_test = vectorizer.transform(test_data['tweet'])
+
+X_train = vectorize(train_data['tweet'])
 X_val = vectorizer.transform(val_data['tweet'])
 X_test = vectorizer.transform(test_data['tweet'])
 
