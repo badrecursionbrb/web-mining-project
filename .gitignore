@@ -161,3 +161,6 @@ cython_debug/
 
 settings.json
 launch.json
+datasets/glove-twitter-27B-25d-w2v.txt
+glove.twitter.27B.25d.w2v.txt
+datasets/cc.en.300.bin
