@@ -1,7 +1,11 @@
 import pandas as pd
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, Doc2Vec, KeyedVectors
+from gensim.test.utils import datapath
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import spacy
+import numpy as np
+import fasttext
+import fasttext.util
 
 SPACY_CORPUS = "en_core_web_sm"
 
@@ -51,25 +55,36 @@ class VectorizerWrapper():
     def __init__(self, vectorizer_name="tfidf") -> None:
         self.vectorizer_name = vectorizer_name
         self.vectorizer = None
+        self.dims = None
     
     def fit_transform(self, data, **kwargs): 
         if self.vectorizer_name == "count":
             self.vectorizer = CountVectorizer(**kwargs)
             return self.vectorizer.fit_transform(data)
         elif self.vectorizer_name == "spacy": 
-            nlp = spacy.load(SPACY_CORPUS)
+            nlp = spacy.load(SPACY_CORPUS, disable=["tagger", "parser", "ner", "attribute_ruler", "lemmatizer"])
             self.vectorizer = nlp
             return self.transform(data) 
         elif self.vectorizer_name == "word2vec":
             # Load the pre-trained Word2Vec model
-            model_path = "datasets/glove-twitter-27B-25d-w2v.txt"  # Replace 'path_to_pretrained_model' with the actual path to the model file
-            word2vec_model = Word2Vec.load(model_path)
-            self.vectorizer = word2vec_model
-            matrix = []
-            for doc in data: 
-                
-            matrix = [self.vectorizer[word] for doc in data for word in doc]
-            return matrix 
+            model_path = "./datasets/glove.twitter.27B.25d.txt"  # Replace 'path_to_pretrained_model' with the actual path to the model file
+            word2vec_model =  KeyedVectors.load_word2vec_format(datapath('word2vec_pre_kv_c'), binary=False)
+            self.dims = 25
+            # word2vec_model = Word2Vec.load(model_path)
+            self.vectorizer = word2vec_model 
+            return self.transform(data) 
+        elif self.vectorizer_name == "doc2vec":
+            doc2vec_model = Doc2Vec(vector_size=50, min_count=2, epochs=40)
+            self.vectorizer = doc2vec_model
+            return self.transform(data)
+        elif self.vectorizer_name == "fasttext":
+            model_path = "./datasets/cc.en.300.bin"
+            fasttext_model = fasttext.load_model(model_path)
+            self.dims= 100 # setting dims here manually 
+            fasttext.util.reduce_model(fasttext_model, self.dims)
+            print(fasttext_model.get_dimension())
+            self.vectorizer = fasttext_model
+            return self.transform(data)
         elif self.vectorizer_name == "tfidf": 
             self.vectorizer = TfidfVectorizer(**kwargs)
             return self.vectorizer.fit_transform(data)
@@ -81,28 +96,37 @@ class VectorizerWrapper():
         if self.vectorizer_name in self.sklearn_vectorizers: 
             return self.vectorizer.transform(data)
         elif self.vectorizer_name == "spacy": 
-            return [self.vectorizer(doc) for doc in data]
+            print("using spacy")
+            #return [self.vectorizer(doc).vector for doc in data]
+            return [doc.vector for doc in self.vectorizer.pipe(data)]
         elif self.vectorizer_name == "word2vec": 
-            
+            print("using word2vec")
+            matrix = []
+            for doc in data: 
+                word_vectors = []
+                for word in doc:
+                    try: 
+                        word_vectors.append(self.vectorizer[word])
+                    except KeyError:
+                        pass
+                #word_vectors = [self.vectorizer[word] for word in doc]
+                if len(word_vectors) == 0: 
+                    word_vectors.append([0] * self.dims)
+                matrix.append(np.mean(word_vectors, axis=0))
+            return matrix
+        elif self.vectorizer_name == "doc2vec": 
+            print("using doc2vec")
+            matrix = [self.vectorizer.infer_vector(doc) for doc in data]
+            return matrix
+        elif self.vectorizer_name == "fasttext":
+            print("using fasttext")
+            matrix = []
+            for doc in data: 
+                word_vectors = [self.vectorizer.get_word_vector(word) for word in doc]
+                matrix.append(np.mean(word_vectors, axis=0))
+            return matrix 
         else: 
             return self.vectorizer.transform(data) 
         
         
-def transform(data, vectorizer_name="tfidf", **kwargs):
-    if vectorizer_name == "count":
-        return CountVectorizer(**kwargs).fit_transform(data)
-    elif vectorizer_name == "spacy": 
-        nlp = spacy.load(SPACY_CORPUS)
-        matrix = [nlp(doc).vector_norm for doc in data]
-        return matrix 
-    elif vectorizer_name == "word2vec":
-        # Load the pre-trained Word2Vec model
-        model_path = "datasets/glove-twitter-27B-25d-w2v.txt"  # Replace 'path_to_pretrained_model' with the actual path to the model file
-        word2vec_model = Word2Vec.load(model_path)
-        matrix = [word2vec_model[word] for doc in data for word in doc]
-        return matrix 
-    elif vectorizer_name == "tfidf": 
-        return TfidfVectorizer(**kwargs).fit_transform(data)
-    else:
-        return TfidfVectorizer(**kwargs).fit_transform(data)
 
