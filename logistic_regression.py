@@ -17,9 +17,9 @@ from sklearn.model_selection import GridSearchCV
 
 # Fit and transform the training data
 # Create a TF-IDF vectorizer
-train_data, val_data, test_data = load_datasets(use_joined=True)
-vectorizer = VectorizerWrapper(vectorizer_name="tfidf")
-X_train = vectorizer.fit_transform(train_data['tweet'], max_features=20000, max_df=0.8)
+# train_data, val_data, test_data = load_datasets(use_joined=True)
+# vectorizer = VectorizerWrapper(vectorizer_name="tfidf")
+# X_train = vectorizer.fit_transform(train_data['tweet'], max_features=20000, max_df=0.8)
 
 # # count vectorizer version
 # train_data, val_data, test_data = load_datasets(use_joined=True)
@@ -27,9 +27,9 @@ X_train = vectorizer.fit_transform(train_data['tweet'], max_features=20000, max_
 # X_train = vectorizer.fit_transform(train_data['tweet'], max_features=20000, max_df=0.8)
 
 # # gensim word2vec vectorizer 
-# train_data, val_data, test_data = load_datasets(use_joined=False)
-# vectorizer = VectorizerWrapper(vectorizer_name="word2vec")
-# X_train = vectorizer.fit_transform(train_data['tweet'])
+train_data, val_data, test_data = load_datasets(use_joined=False)
+vectorizer = VectorizerWrapper(vectorizer_name="word2vec")
+X_train = vectorizer.fit_transform(train_data['tweet'])
 
 # use fasttext vectorizer
 # train_data, val_data, test_data = load_datasets(use_joined=False)

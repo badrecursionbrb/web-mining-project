@@ -71,8 +71,8 @@ class VectorizerWrapper():
             # Load the pre-trained Word2Vec model
             #model_path = "./datasets/glove.twitter.27B.25d.txt"  # Replace 'path_to_pretrained_model' with the actual path to the model file
             #word2vec_model =  KeyedVectors.load_word2vec_format(datapath('word2vec_pre_kv_c'), binary=False)
-            word2vec_model = api.load("glove-twitter-25")
-            self.dims = 25
+            self.dims = 100
+            word2vec_model = api.load("glove-twitter-"+ str(self.dims))
             # word2vec_model = Word2Vec.load(model_path)
             self.vectorizer = word2vec_model 
             return self.transform(data) 
