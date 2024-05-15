@@ -84,7 +84,7 @@ for vect_name, vect_args in vectorizer_dict.items():
     
     parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l1', 'l2', 'elasticnet'), 'solver': ('newton-cg', 'sag', 'saga', 'lbfgs'), 'max_iter': (1000,)}
 
-    grid_clf = GridSearchCV(model, parameters)
+    grid_clf = GridSearchCV(model, parameters, verbose= True)
     grid_clf.fit(X_train, train_data['label'])
     print(sorted(grid_clf.cv_results_.keys()))
     
