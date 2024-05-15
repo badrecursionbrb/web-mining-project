@@ -3,7 +3,7 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
 from functions import load_data, load_datasets
 
 # # Paths to the data
@@ -38,5 +38,17 @@ model.fit(X_train, train_data['label'])
 
 # Predict on validation data
 val_predictions = model.predict(X_val)
-val_accuracy = accuracy_score(val_data['label'], val_predictions)
-print(f'Validation Accuracy: {val_accuracy:.2f}')
+val_f1 = f1_score(val_data['label'], val_predictions, average="weighted")
+print(f'Validation F1: {val_f1:.2f}')
+
+#%%
+# Create and train the Naive Bayes model
+model = MultinomialNB()
+model.fit(X_train, train_data['label'])
+
+# Predict on validation data
+test_predictions = model.predict(X_test)
+test_f1 = f1_score(test_data['label'], test_predictions, average="weighted")
+print(f'Validation F1: {test_f1:.2f}')
+
+# %%
