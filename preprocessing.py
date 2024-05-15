@@ -6,11 +6,10 @@ import os
 import spacy
 import string
 import emoji
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from gensim.models import Word2Vec
 import re
+from functions import vectorize
 
 
 #%%
@@ -89,25 +88,6 @@ def remove_punctuation(data):
     for doc in data: 
         data_cleaned.append([str(token).translate(translation_table).replace("'", "").replace("’", "") for token in doc])
     return data_cleaned
-
-
-def vectorize(data, vectorizer_name="tfidf", **kwargs):
-    if vectorizer_name == "count":
-        return CountVectorizer(**kwargs).fit_transform(data)
-    elif vectorizer_name == "spacy": 
-        nlp = spacy.load(spacy_corpus)
-        matrix = [nlp(doc).vector_norm for doc in data]
-        return matrix 
-    elif vectorizer_name == "word2vec":
-        # Load the pre-trained Word2Vec model
-        model_path = "datasets/glove-twitter-27B-25d-w2v.txt"  # Replace 'path_to_pretrained_model' with the actual path to the model file
-        word2vec_model = Word2Vec.load(model_path)
-        matrix = [word2vec_model[word] for doc in data for word in doc]
-        return matrix 
-    elif vectorizer_name == "tfidf": 
-        return TfidfVectorizer(**kwargs).fit_transform(data)
-    else:
-        return TfidfVectorizer(**kwargs).fit_transform(data)
 
 
 def tokenize(data): 
