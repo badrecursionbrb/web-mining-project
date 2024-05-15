@@ -19,3 +19,5 @@ tensorflow
 transformers
 accelerate
 ipykernel
+fasttext
+
