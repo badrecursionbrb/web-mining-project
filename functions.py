@@ -1,6 +1,8 @@
 import pandas as pd
 from gensim.models import Word2Vec, Doc2Vec, KeyedVectors
+from gensim.models.doc2vec import TaggedDocument
 from gensim.test.utils import datapath
+import gensim.downloader as api
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import spacy
 import numpy as np
@@ -67,14 +69,23 @@ class VectorizerWrapper():
             return self.transform(data) 
         elif self.vectorizer_name == "word2vec":
             # Load the pre-trained Word2Vec model
-            model_path = "./datasets/glove.twitter.27B.25d.txt"  # Replace 'path_to_pretrained_model' with the actual path to the model file
-            word2vec_model =  KeyedVectors.load_word2vec_format(datapath('word2vec_pre_kv_c'), binary=False)
+            #model_path = "./datasets/glove.twitter.27B.25d.txt"  # Replace 'path_to_pretrained_model' with the actual path to the model file
+            #word2vec_model =  KeyedVectors.load_word2vec_format(datapath('word2vec_pre_kv_c'), binary=False)
+            word2vec_model = api.load("glove-twitter-25")
             self.dims = 25
             # word2vec_model = Word2Vec.load(model_path)
             self.vectorizer = word2vec_model 
             return self.transform(data) 
         elif self.vectorizer_name == "doc2vec":
+            def tagged_document(data_ls_ls):
+                for i, word_list in enumerate(data_ls_ls):
+                    yield TaggedDocument(word_list, [i])
+            data = list(tagged_document(data))
             doc2vec_model = Doc2Vec(vector_size=50, min_count=2, epochs=40)
+            
+            doc2vec_model.build_vocab(data)
+            doc2vec_model.train(data, total_examples=doc2vec_model.corpus_count, epochs=doc2vec_model.epochs)
+
             self.vectorizer = doc2vec_model
             return self.transform(data)
         elif self.vectorizer_name == "fasttext":
