@@ -67,25 +67,22 @@ print("train_text: " + str(len(train_text)) + ", train_labels: " + str(len(train
 
 
 # %%
-# def tokenize_function(text):
-#   tokenized_list = []
+def tokenize_function(text):
+  tokenized_list = []
 
-#   # extract text
-#   for t in text:
+  # extract text
+  for t in text:
+      tokenized_text = tokenizer(
+          t,
+          return_tensors='pt',
+          truncation=True,
+          padding=True,
+          max_length=512
+          )
+      tokenized_list.append(tokenized_text)
 
-#       # tokenize and truncate text
-#       #tokenizer.truncation_side = "right"
-#       #tokenizer.padding_side = "right"
-#       tokenized_text = tokenizer(
-#           preprocessed_text,
-#           return_tensors='pt',
-#           truncation=True,
-#           padding=True,
-#           max_length=512
-#           )
-#       tokenized_list.append(tokenized_text)
+  return tokenized_list
 
-#   return tokenized_list
 
 # %%
 model_name = "cardiffnlp/twitter-roberta-base-sentiment-latest"
