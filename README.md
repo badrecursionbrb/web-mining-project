@@ -20,5 +20,12 @@ fasttext.util.download_model('en', if_exists='ignore')  # English
 #ft = fasttext.load_model('cc.en.300.bin')# %%
 
 ## Optuna Dashboard
+
+after executing the following command
+  optuna-dashboard sqlite:///<sql-lite-db-name>.db
+
+
 The Optuna Dashboard is reachable by the URL: 
  http://localhost:8080/
+
+

@@ -40,23 +40,6 @@ else:
 
 
 # %%
-# train_text = pd.read_table('train_text.txt', header=None)
-# train_text = train_text.rename(columns={0: "Tweets"})
-
-# val_text = pd.read_table('val_text.txt', header=None)
-# val_text = val_text.rename(columns={0: "Tweets"})
-
-# test_text = pd.read_table('test_text.txt', header=None)
-# test_text = test_text.rename(columns={0: "Tweets"})
-
-# train_labels = pd.read_table('train_labels.txt', header=None)
-# train_labels = train_labels.rename(columns={0: "Label"})
-
-# val_labels = pd.read_table('val_labels.txt', header=None)
-# val_labels = val_labels.rename(columns={0: "Label"})
-
-# test_labels = pd.read_table('test_labels.txt', header=None)
-# test_labels = test_labels.rename(columns={0: "Label"})
 
 train_data, val_data, test_data = load_datasets()
 
@@ -384,7 +367,6 @@ def objective(trial: Trial):
 
 #%%
 # Run study
-
 now = datetime.now()
 formatted_time = now.strftime('%Y-%m-%d-%H-%M-%S')
 
@@ -392,9 +374,11 @@ study_name = "RoBERTa_optimization_" + formatted_time
 storage_name = f"sqlite:///{study_name}.db"
 study = optuna.create_study(study_name=study_name, storage=storage_name, direction=direction)
 
-# launching dashboard
-subprocess.run(["optuna-dashboard", storage_name])
-
 study.optimize(objective, n_trials=20)
 
-# %%
+#%%
+# launching dashboard
+dashboard_proc = subprocess.run(["optuna-dashboard", storage_name])
+
+#%%
+dashboard_proc.terminate()
