@@ -13,6 +13,8 @@ from functions import load_datasets
 from sklearn.metrics import f1_score
 
 import evaluate
+import optuna
+from optuna.trial import Trial
 
 
 #%% 
@@ -254,7 +256,7 @@ for epoch in range(3):
 
 model.eval()'''
 # %%
-
+# Run the hyperparameter search
 
 # learning rate  5e-5, 4e-5, 3e-5, and 2e-5 5e-4
 # epochs 3 5
@@ -262,10 +264,11 @@ model.eval()'''
 # Grid search 
 
 
-def optuna_hp_space(trial):
+def optuna_hp_space(trial: Trial):
     return {
         "learning_rate": trial.suggest_float("learning_rate", 1e-6, 1e-4, log=True),
         "num_train_epochs": trial.suggest_int("per_device_train_batch_size", 2, 5),
+        "evaluation_strategy": trial.suggest_categorical("evaluation_rate", ["steps", "epoch"])
 
     }
 
@@ -293,7 +296,8 @@ training_args = TrainingArguments(
     #gradient_accumulation_steps=2,
     dataloader_pin_memory = False,
     load_best_model_at_end=True,
-    metric_for_best_model="accuracy" 
+    metric_for_best_model="f1",
+    evaluation_strategy="steps"
     
 )
 
