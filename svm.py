@@ -3,7 +3,7 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
 from sklearn.model_selection import GridSearchCV
 from functions import load_data, load_datasets
 
@@ -37,25 +37,29 @@ X_test = vectorizer.transform(test_data['tweet'])
 svm_model = SVC()
 
 param_grid = {
-    'C': [0.1, 1, 10, 100],  # Regularization parameter
-    'gamma': ['scale', 'auto', 0.1, 1, 10, 100],  # Kernel coefficient
-    'kernel': ['rbf', 'poly', 'sigmoid']  # Type of kernel
+    'C': [0.001, 0.01, 0.1, 1, 10, 100],  # Regularization parameter
+    'kernel': ['linear']  # Type of kernels
 }
 
 # Set up GridSearchCV
-grid_search = GridSearchCV(svm_model, param_grid, cv=5, verbose=2, scoring='accuracy')
+grid_search = GridSearchCV(svm_model, param_grid, cv=5, verbose=2, scoring='f1_weighted')
 grid_search.fit(X_train, train_data['label'])
 
 #%%
 # evaluate best model
 best_svm = grid_search.best_estimator_
 val_predictions = best_svm.predict(X_val)
-val_accuracy = accuracy_score(val_data['label'], val_predictions)
-print(f'Best SVM Validation Accuracy: {val_accuracy:.2f}')
+val_f1_score = f1_score(val_data['label'], val_predictions, average='weighted')
+print(f'Best SVM Validation F1 Score: {val_f1_score:.2f}')
 
 #%%
-#final testing
+# Final testing using F1 score
 test_predictions = best_svm.predict(X_test)
-test_accuracy = accuracy_score(test_data['label'], test_predictions)
-print(f'Test Accuracy: {test_accuracy:.2f}')
+test_f1_score = f1_score(test_data['label'], test_predictions, average='weighted')
+print(f'Test F1 Score: {test_f1_score:.2f}')
+
+# %%
+# Output the parameters of the best model
+best_params = grid_search.best_params_
+print(f'Best Model Parameters: {best_params}')
 # %%
