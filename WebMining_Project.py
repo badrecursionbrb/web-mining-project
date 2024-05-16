@@ -10,6 +10,7 @@ from scipy.special import softmax
 from torch.utils.data import DataLoader
 from transformers import AdamW
 from functions import load_datasets
+from sklearn.metrics import f1_score
 
 import evaluate
 
