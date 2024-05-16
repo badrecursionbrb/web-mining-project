@@ -34,6 +34,8 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
     print("GPU not available, training on CPU")
+
+
 # %%
 # train_text = pd.read_table('train_text.txt', header=None)
 # train_text = train_text.rename(columns={0: "Tweets"})
@@ -64,12 +66,12 @@ val_labels = val_data["label"].to_list()
 test_labels = test_data["label"].to_list()
 
 
-# %%
+
 print("train_text: " + str(len(train_text)) + ", train_labels: " + str(len(train_labels)) + ", val_text: " + str(len(val_text)) 
       + ", val_labels: " + str(len(val_labels)) + ", test_text: " + str(len(test_text)) + ", test_labels: " + str(len(test_labels)))
 
 
-# %%
+
 def tokenize_function(text):
   tokenized_list = []
 
@@ -93,18 +95,18 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 config = AutoConfig.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
-# %%
+
 # train_encodings = tokenize_function(train_text.to_string())
 # val_encodings = tokenize_function(val_text.to_string())
 # test_encodings = tokenize_function(test_text.to_string())
 
-# %%
+
 max_length = 280
 train_encodings = tokenizer(train_text, padding=True, truncation=True, max_length=max_length)
 val_encodings = tokenizer(val_text, padding=True, truncation=True, max_length=max_length)
 test_encodings = tokenizer(test_text, padding=True, truncation=True, max_length=max_length)
 
-# %%
+
 print(train_encodings['input_ids'][2524])
 
 # %%
@@ -128,11 +130,13 @@ class Dataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.labels)
 
-# %% 
+
 train_dataset = Dataset(train_encodings, train_labels)
 val_dataset = Dataset(val_encodings, val_labels)
 test_dataset = Dataset(test_encodings, test_labels)
-
+#######################################################################################################################
+# single model part
+#######################################################################################################################
 # %%
 
 # dataloader_pin_memory set to False due to GPU not working otherwise
@@ -255,14 +259,18 @@ for epoch in range(3):
         optim.step()
 
 model.eval()'''
+
+#######################################################################################################################
+#  the hyperparameter search part
+#######################################################################################################################
 # %%
-# Run the hyperparameter search
 
 # learning rate  5e-5, 4e-5, 3e-5, and 2e-5 5e-4
 # epochs 3 5
 
 # Grid search 
-
+def model_init():
+    return model
 
 def optuna_hp_space(trial: Trial):
     return {
@@ -280,7 +288,7 @@ def compute_metrics(eval_preds):
         metric = evaluate.load("f1")
         logits, labels = eval_preds
         predictions = np.argmax(logits, axis=-1)
-        return metric.compute(predictions=predictions, references=labels)
+        return metric.compute(predictions=predictions, references=labels, average="weighted")
     
 
 training_args = TrainingArguments(
@@ -295,7 +303,7 @@ training_args = TrainingArguments(
     logging_steps=30,
     #gradient_accumulation_steps=2,
     dataloader_pin_memory = False,
-    load_best_model_at_end=True,
+    #load_best_model_at_end=True,
     metric_for_best_model="f1",
     evaluation_strategy="steps"
     
@@ -304,6 +312,7 @@ training_args = TrainingArguments(
 # %%
 
 trainer = Trainer(
+    model_init=model_init,
     model=model,
     args=training_args,
     train_dataset=train_dataset,
@@ -330,3 +339,4 @@ for key, value in best_trials.hyperparameters.items():
 
 # optuna dashboard command
 #  optuna-dashboard sqlite:///db.sqlite3
+# %%
