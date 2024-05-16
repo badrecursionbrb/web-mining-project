@@ -163,6 +163,78 @@ trainer_res = trainer.train()
 
 
 # %%
+# evaluate the finetuned model 
+trainer.evaluate()
+
+# %%
+# making the predictions with the test dataset 
+trainer_predictions = trainer.predict(test_dataset=test_dataset)
+
+# %%
+# getting the label predictions out of the trainer object/class 
+preds = np.argmax(trainer_predictions.predictions, axis=-1)
+
+# %%
+# defining the output metrics for the test score 
+f1_metric = evaluate.load("f1")
+precision_metric = evaluate.load("precision")
+recall_metric = evaluate.load("recall")
+accuracy_metric = evaluate.load("accuracy")
+
+# computing the defined score metrics 
+f1 = f1_metric.compute(predictions=preds, references=trainer_predictions.label_ids, average='weighted')
+precision = precision_metric.compute(predictions=preds, references=trainer_predictions.label_ids, average='weighted')
+recall = recall_metric.compute(predictions=preds, references=trainer_predictions.label_ids, average='weighted')
+accuracy = accuracy_metric.compute(predictions=preds, references=trainer_predictions.label_ids)
+
+# print the results of the score metrics 
+print(f1, precision, recall, accuracy)
+
+# %%
+# Only used for pretrained model withour finetuning. 
+def score_function(model, test_data, test_labels, device):
+    i = 0
+    label_pred = []
+    model.eval()
+    model.cpu()
+    for t in test_data:
+    # model_input = tokenize_function(t)
+        output = model(**t)
+        scores = output.logits.detach().numpy()
+        scores = softmax(scores)
+        print(i)
+        print(scores)
+        
+        neg_score = scores[0][0]
+        neu_score = scores[0][1]
+        pos_score = scores[0][2]
+
+        if neg_score > neu_score and neg_score > pos_score:
+            label_pred.append(0)
+        elif neu_score > neg_score and neu_score > pos_score:
+            label_pred.append(1)
+        elif pos_score > neu_score and pos_score > neg_score:
+            label_pred.append(2)
+        i = i+1
+
+    f1 = f1_score(test_labels, label_pred, average='weighted')
+    return f1
+
+# %%
+# Only used for the pretrained model without finetuning 
+model_input = tokenize_function(test_text)
+print(model_input)
+
+# %%
+# Only used for the pretrained model without finetuning 
+score = score_function(model, model_input, test_labels, device)
+
+# %%
+# Only used for the pretrained model without finetuning 
+print(score)
+
+
+# %%
 '''device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device)
 model.train()
