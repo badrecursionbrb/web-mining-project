@@ -208,7 +208,7 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
 
 def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict):
     now = datetime.now()
-    formatted_time = now.strftime('%Y-%m-%d-%H:%M:%S')
+    formatted_time = now.strftime('%Y-%m-%d-%H-%M-%S')
 
     filename =  estimator_name + "_grid_search_" + formatted_time + ".txt"
     with open('models/' + filename, 'w') as file:
@@ -216,8 +216,8 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
         for param, value in best_params.items():
             file.write(f"{param}: {value}\n")
 
-    for metric, value in analyze_results.items():
-        file.write(f"{metric}: {value}\n")
+        for metric, value in analyze_results.items():
+            file.write(f"{metric}: {value}\n")
 
     print("Best parameters written to '{}' at time: {}.".format(filename, formatted_time))
 
