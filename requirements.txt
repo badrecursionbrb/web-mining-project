@@ -20,4 +20,6 @@ transformers
 accelerate
 ipykernel
 fasttext
-
+evaluate
+optuna
+optuna-dashboard

@@ -2,9 +2,10 @@
 # imports
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import MultinomialNB, CategoricalNB
 from sklearn.metrics import accuracy_score
 from functions import load_data, load_datasets, VectorizerWrapper
+from sklearn.model_selection import GridSearchCV
 
 # # Paths to the data
 # train_tweets_path = './preprocessed_data/preprocessed_train.txt'
@@ -41,3 +42,42 @@ model.fit(X_train, train_data['label'])
 val_predictions = model.predict(X_val)
 val_accuracy = accuracy_score(val_data['label'], val_predictions)
 print(f'Validation Accuracy: {val_accuracy:.2f}')
+
+#%% 
+# grid search for Multinomial NB 
+vectorizer_dict = {"tfidf": {'max_features': 20000, 'max_df':0.8}, "count": {'max_features': 20000, 'max_df':0.8}}
+for vect_name, vect_args in vectorizer_dict.items(): 
+    vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
+
+    X_train = vectorizer.fit_transform(train_data['tweet'], **vect_args)
+
+    # Transform the validation and test data
+    X_val = vectorizer.transform(val_data['tweet'])
+    X_test = vectorizer.transform(test_data['tweet'])
+    
+    
+    parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+    model = MultinomialNB()
+    grid_clf = GridSearchCV(model, parameters, verbose= True)
+    grid_clf.fit(X_train, train_data['label'])
+    print(sorted(grid_clf.cv_results_.keys()))
+    
+#%% 
+# grid search for Categorical NB 
+vectorizer_dict = {"tfidf": {'max_features': 20000, 'max_df':0.8}, "count": {'max_features': 20000, 'max_df':0.8}}
+for vect_name, vect_args in vectorizer_dict.items(): 
+    vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
+
+    X_train = vectorizer.fit_transform(train_data['tweet'], **vect_args)
+
+    # Transform the validation and test data
+    X_val = vectorizer.transform(val_data['tweet'])
+    X_test = vectorizer.transform(test_data['tweet'])
+    
+    
+    parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+    model = CategoricalNB()
+    grid_clf = GridSearchCV(model, parameters, verbose= True)
+    grid_clf.fit(X_train, train_data['label'])
+    print(sorted(grid_clf.cv_results_.keys()))    
+    

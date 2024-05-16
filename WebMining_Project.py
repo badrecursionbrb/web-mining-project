@@ -1,5 +1,6 @@
 # %%
 import pandas as pd
+import numpy as np
 import torch
 #from tensorflow.keras.optimizers import Adam
 from transformers import Trainer, TrainingArguments
@@ -9,6 +10,9 @@ from scipy.special import softmax
 from torch.utils.data import DataLoader
 from transformers import AdamW
 from functions import load_datasets
+
+import evaluate
+
 
 #%% 
 USE_GPU = True
@@ -159,6 +163,78 @@ trainer_res = trainer.train()
 
 
 # %%
+# evaluate the finetuned model 
+trainer.evaluate()
+
+# %%
+# making the predictions with the test dataset 
+trainer_predictions = trainer.predict(test_dataset=test_dataset)
+
+# %%
+# getting the label predictions out of the trainer object/class 
+preds = np.argmax(trainer_predictions.predictions, axis=-1)
+
+# %%
+# defining the output metrics for the test score 
+f1_metric = evaluate.load("f1")
+precision_metric = evaluate.load("precision")
+recall_metric = evaluate.load("recall")
+accuracy_metric = evaluate.load("accuracy")
+
+# computing the defined score metrics 
+f1 = f1_metric.compute(predictions=preds, references=trainer_predictions.label_ids, average='weighted')
+precision = precision_metric.compute(predictions=preds, references=trainer_predictions.label_ids, average='weighted')
+recall = recall_metric.compute(predictions=preds, references=trainer_predictions.label_ids, average='weighted')
+accuracy = accuracy_metric.compute(predictions=preds, references=trainer_predictions.label_ids)
+
+# print the results of the score metrics 
+print(f1, precision, recall, accuracy)
+
+# %%
+# Only used for pretrained model withour finetuning. 
+def score_function(model, test_data, test_labels, device):
+    i = 0
+    label_pred = []
+    model.eval()
+    model.cpu()
+    for t in test_data:
+    # model_input = tokenize_function(t)
+        output = model(**t)
+        scores = output.logits.detach().numpy()
+        scores = softmax(scores)
+        print(i)
+        print(scores)
+        
+        neg_score = scores[0][0]
+        neu_score = scores[0][1]
+        pos_score = scores[0][2]
+
+        if neg_score > neu_score and neg_score > pos_score:
+            label_pred.append(0)
+        elif neu_score > neg_score and neu_score > pos_score:
+            label_pred.append(1)
+        elif pos_score > neu_score and pos_score > neg_score:
+            label_pred.append(2)
+        i = i+1
+
+    f1 = f1_score(test_labels, label_pred, average='weighted')
+    return f1
+
+# %%
+# Only used for the pretrained model without finetuning 
+model_input = tokenize_function(test_text)
+print(model_input)
+
+# %%
+# Only used for the pretrained model without finetuning 
+score = score_function(model, model_input, test_labels, device)
+
+# %%
+# Only used for the pretrained model without finetuning 
+print(score)
+
+
+# %%
 '''device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device)
 model.train()
@@ -180,3 +256,75 @@ for epoch in range(3):
 
 model.eval()'''
 # %%
+
+
+# learning rate  5e-5, 4e-5, 3e-5, and 2e-5 5e-4
+# epochs 3 5
+
+# Grid search 
+
+
+def optuna_hp_space(trial):
+    return {
+        "learning_rate": trial.suggest_float("learning_rate", 1e-6, 1e-4, log=True),
+        "num_train_epochs": trial.suggest_int("per_device_train_batch_size", 2, 5),
+
+    }
+
+# def compute_objective(metrics):
+#     return metrics["eval_loss"]
+
+
+def compute_metrics(eval_preds):
+        metric = evaluate.load("f1")
+        logits, labels = eval_preds
+        predictions = np.argmax(logits, axis=-1)
+        return metric.compute(predictions=predictions, references=labels)
+    
+
+training_args = TrainingArguments(
+    output_dir='./results',
+    num_train_epochs=3,
+    per_device_train_batch_size=32,
+    per_device_eval_batch_size=64,
+    warmup_steps=500,
+    learning_rate=5e-5,
+    weight_decay=0.01,
+    logging_dir='./logs',
+    logging_steps=30,
+    #gradient_accumulation_steps=2,
+    dataloader_pin_memory = False,
+    load_best_model_at_end=True,
+    metric_for_best_model="accuracy" 
+    
+)
+
+# %%
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset,
+    compute_metrics=compute_metrics
+)
+
+
+
+best_trials = trainer.hyperparameter_search(
+    direction="minimize",
+    backend="optuna",
+    hp_space=optuna_hp_space,
+    n_trials=10
+    #compute_objective=compute_objective,
+)
+
+print("Best trial: {}".format(best_trials.objective))
+
+print("with parameters:")
+for key, value in best_trials.hyperparameters.items():
+    print("{}: {}".format(key, value))
+
+
+# optuna dashboard command
+#  optuna-dashboard sqlite:///db.sqlite3

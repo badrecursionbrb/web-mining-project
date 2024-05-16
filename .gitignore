@@ -164,3 +164,6 @@ launch.json
 
 logs/*
 results/*
+datasets/cc.en.300.bin
+glove.twitter.27B.25d.w2v.txt
+datasets/glove-twitter-27B-25d-w2v.txt
