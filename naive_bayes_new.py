@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.naive_bayes import MultinomialNB, CategoricalNB
 from sklearn.metrics import accuracy_score, f1_score
-from functions import load_data, load_datasets, VectorizerWrapper, analyze_model
+from functions import load_data, load_datasets, VectorizerWrapper, analyze_model, meta_grid_search
 from sklearn.model_selection import GridSearchCV
 
 
@@ -35,39 +35,27 @@ model.fit(X_train, train_data['label'])
 analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
 
 #%% 
+parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+
+grid_clf = GridSearchCV(model, parameters, verbose=True)
+grid_clf.fit(X_train, train_data['label'])
+print(sorted(grid_clf.cv_results_.keys()))
+
+
+#%% 
 # grid search for Multinomial NB 
 vectorizer_dict = {"tfidf": {'max_features': 5000, 'max_df':0.8}, "count": {'max_features': 5000, 'max_df':0.8}}
-for vect_name, vect_args in vectorizer_dict.items(): 
-    vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
+parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+model = MultinomialNB()
 
-    X_train = vectorizer.fit_transform(train_data['tweet'], **vect_args)
+grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
+                            train_data=train_data, val_data=val_data, test_data=test_data)
 
-    # Transform the validation and test data
-    X_val = vectorizer.transform(val_data['tweet'])
-    X_test = vectorizer.transform(test_data['tweet'])
-    
-    
-    parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
-    model = MultinomialNB()
-    grid_clf = GridSearchCV(model, parameters, verbose= True)
-    grid_clf.fit(X_train, train_data['label'])
-    print(sorted(grid_clf.cv_results_.keys()))
-    
 #%% 
 # grid search for Categorical NB 
 vectorizer_dict = {"tfidf": {'max_features': 5000, 'max_df':0.8}, "count": {'max_features': 5000, 'max_df':0.8}}
-for vect_name, vect_args in vectorizer_dict.items(): 
-    vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
+parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+model = CategoricalNB()
 
-    X_train = vectorizer.fit_transform(train_data['tweet'], **vect_args)
-
-    # Transform the validation and test data
-    X_val = vectorizer.transform(val_data['tweet'])
-    X_test = vectorizer.transform(test_data['tweet'])
-    
-    
-    parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
-    model = CategoricalNB()
-    grid_clf = GridSearchCV(model, parameters, verbose= True)
-    grid_clf.fit(X_train, train_data['label'])
-    print(sorted(grid_clf.cv_results_.keys()))    
+grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
+                            train_data=train_data, val_data=val_data, test_data=test_data)
