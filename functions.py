@@ -252,7 +252,7 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         best_params = grid_clf.best_params_
         estimator_name = best_estimator.__class__.__name__
         
-        analyze_results = analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
+        analyze_results = analyze_model(model=best_estimator, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
 
         write_to_file(estimator_name=estimator_name, vect_name=vect_name, best_params=best_params, analyze_results=analyze_results, params_grid=parameters)
 
