@@ -28,4 +28,6 @@ after executing the following command
 The Optuna Dashboard is reachable by the URL: 
  http://localhost:8080/
 
-
+## Download spacy corpora
+python -m spacy download en_core_web_lg
+python -m spacy download en_core_web_sm

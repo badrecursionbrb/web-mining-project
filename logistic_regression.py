@@ -15,7 +15,7 @@ vectorizer = VectorizerWrapper(vectorizer_name=vectorizer_name)
 
 train_data, val_data, test_data = load_datasets(vectorizer_name=vectorizer_name)
 
-X_train = vectorizer.fit_transform(train_data['tweet'])
+X_train = vectorizer.fit_transform(train_data['tweet'], max_features=10000)
 
 # Transform the validation and test data
 X_val = vectorizer.transform(val_data['tweet'])
@@ -42,7 +42,9 @@ print(sorted(grid_clf.cv_results_.keys()))
 
 # %%
 
-vectorizer_dict = {"word2vec": {}, "fasttext": {}, "spacy": {}, "tfidf": {'max_df':0.8}, "count": {'max_df':0.8}, }
+vectorizer_dict = {"tfidf": {'max_features': 5000, 'max_df':0.8}}
+#vectorizer_dict = {"word2vec": {}, "fasttext": {}, "spacy": {}, "tfidf": {'max_df':0.8}, "count": {'max_df':0.8}, }
+
 #parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l2',), 'solver': ('lbfgs',), 'max_iter': (1000,)}
 parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l1', 'l2', 'elasticnet'), 'solver': ('newton-cg', 'sag', 'saga', 'lbfgs'), 'max_iter': (1000,)}
 

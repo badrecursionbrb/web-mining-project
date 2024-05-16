@@ -169,3 +169,5 @@ glove.twitter.27B.25d.w2v.txt
 datasets/glove-twitter-27B-25d-w2v.txt
 models/*
 *.db
+cc.en.300.bin
+cc.en.300.bin.gz

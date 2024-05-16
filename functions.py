@@ -17,8 +17,6 @@ import spacy
 from datetime import datetime
 
 
-
-
 SPACY_CORPUS = "en_core_web_sm"
 
 TWEETS_FOLDER = './preprocessed_data'
@@ -206,24 +204,27 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     return {"test_accuracy": test_accuracy, "test_f1": test_f1, "val_accuracy": val_accuracy, "val_f1": val_f1}
 
 
-def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict):
+def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict, params_grid: dict= {}):
     now = datetime.now()
     formatted_time = now.strftime('%Y-%m-%d-%H-%M-%S')
 
     filename =  estimator_name + "_grid_search_" + formatted_time + ".txt"
     with open('models/' + filename, 'w') as file:
+        file.write(estimator_name + "\n")
         file.write(vect_name + "\n")
         for param, value in best_params.items():
             file.write(f"{param}: {value}\n")
 
         for metric, value in analyze_results.items():
             file.write(f"{metric}: {value}\n")
+        
+        for param, param_vals in params_grid.items():
+            file.write(f"{param}: {param_vals}\n")
 
     print("Best parameters written to '{}' at time: {}.".format(filename, formatted_time))
 
 
-
-def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data):
+def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data, scoring_metric='accuracy'):
     X_train_orig = train_data['tweet']
     X_val_orig = val_data['tweet']
     X_test_orig = test_data['tweet']
@@ -240,7 +241,7 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         X_val = vectorizer.transform(X_val_orig)
         X_test = vectorizer.transform(X_test_orig)
         
-        grid_clf = GridSearchCV(model, parameters, verbose= True)
+        grid_clf = GridSearchCV(model, parameters, verbose= True, scoring=scoring_metric)
         grid_clf.fit(X_train, train_labels)
         print(sorted(grid_clf.cv_results_.keys()))
         
