@@ -14,6 +14,8 @@ import gensim.downloader as api
 
 import spacy
 
+from datetime import datetime
+
 
 
 
@@ -203,6 +205,23 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     return {"test_accuracy": test_accuracy, "test_f1": test_f1, "val_accuracy": val_accuracy, "val_f1": val_f1}
 
 
+def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict):
+    now = datetime.now()
+    formatted_time = now.strftime('%Y-%m-%d-%H:%M:%S')
+
+    filename =  estimator_name + "_grid_search_" + formatted_time + ".txt"
+    with open('models/' + filename, 'w') as file:
+        file.write(vect_name + "\n")
+        for param, value in best_params.items():
+            file.write(f"{param}: {value}\n")
+
+    for metric, value in analyze_results.items():
+        file.write(f"{metric}: {value}\n")
+
+    print("Best parameters written to '{}' at time: {}.".format(filename, formatted_time))
+
+
+
 def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, X_train, X_val, X_test, train_labels, val_labels, test_labels):
     for vect_name, vect_args in vectorizer_dict.items(): 
         vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
@@ -221,16 +240,10 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, X_train, X_v
 
         best_params = grid_clf.best_params_
         estimator_name = best_estimator.__class__.__name__
-        filename =  estimator_name + "_grid_search.txt"
-        with open('models/' + filename, 'w') as file:
-            file.write(vect_name + "\n")
-            for param, value in best_params.items():
-                file.write(f"{param}: {value}\n")
         
         analyze_results = analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
-        for metric, value in analyze_results:
-            file.write(f"{metric}: {value}\n")
-        print("Best parameters written to '{}'.".format(filename))
+
+        write_to_file(estimator_name=estimator_name, vect_name=vect_name, best_params=best_params, analyze_results=analyze_results)
 
         return grid_clf
 
