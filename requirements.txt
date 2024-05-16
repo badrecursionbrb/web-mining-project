@@ -6,7 +6,7 @@ numpy
 spacy 
 textblob
 scikit-learn
-scipy
+scipy==1.10.1
 transformers
 nltk
 ipykernel
