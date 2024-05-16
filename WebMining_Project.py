@@ -1,5 +1,6 @@
 # %%
 import pandas as pd
+import numpy as np
 import torch
 #from tensorflow.keras.optimizers import Adam
 from transformers import Trainer, TrainingArguments
@@ -9,6 +10,9 @@ from scipy.special import softmax
 from torch.utils.data import DataLoader
 from transformers import AdamW
 from functions import load_datasets
+
+import evaluate
+
 
 #%% 
 USE_GPU = True
@@ -180,3 +184,75 @@ for epoch in range(3):
 
 model.eval()'''
 # %%
+
+
+# learning rate  5e-5, 4e-5, 3e-5, and 2e-5 5e-4
+# epochs 3 5
+
+# Grid search 
+
+
+def optuna_hp_space(trial):
+    return {
+        "learning_rate": trial.suggest_float("learning_rate", 1e-6, 1e-4, log=True),
+        "num_train_epochs": trial.suggest_int("per_device_train_batch_size", 2, 5),
+
+    }
+
+# def compute_objective(metrics):
+#     return metrics["eval_loss"]
+
+
+def compute_metrics(eval_preds):
+        metric = evaluate.load("f1")
+        logits, labels = eval_preds
+        predictions = np.argmax(logits, axis=-1)
+        return metric.compute(predictions=predictions, references=labels)
+    
+
+training_args = TrainingArguments(
+    output_dir='./results',
+    num_train_epochs=3,
+    per_device_train_batch_size=32,
+    per_device_eval_batch_size=64,
+    warmup_steps=500,
+    learning_rate=5e-5,
+    weight_decay=0.01,
+    logging_dir='./logs',
+    logging_steps=30,
+    #gradient_accumulation_steps=2,
+    dataloader_pin_memory = False,
+    load_best_model_at_end=True,
+    metric_for_best_model="accuracy" 
+    
+)
+
+# %%
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_dataset,
+    eval_dataset=val_dataset,
+    compute_metrics=compute_metrics
+)
+
+
+
+best_trials = trainer.hyperparameter_search(
+    direction="minimize",
+    backend="optuna",
+    hp_space=optuna_hp_space,
+    n_trials=10
+    #compute_objective=compute_objective,
+)
+
+print("Best trial: {}".format(best_trials.objective))
+
+print("with parameters:")
+for key, value in best_trials.hyperparameters.items():
+    print("{}: {}".format(key, value))
+
+
+# optuna dashboard command
+#  optuna-dashboard sqlite:///db.sqlite3
