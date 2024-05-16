@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.model_selection import GridSearchCV
 
 from gensim.models import Word2Vec, Doc2Vec, KeyedVectors
 from gensim.models.doc2vec import TaggedDocument
@@ -37,7 +38,7 @@ def load_data(tweets_path, labels_path):
         labels = [int(label.strip()) for label in labels]
     return pd.DataFrame({'tweet': tweets, 'label': labels})
 
-def load_datasets(vectorizer_name, use_joined=True): 
+def load_datasets(vectorizer_name="", use_joined=True): 
     if vectorizer_name in {"word2vec", "fasttext"}:
         use_joined = False
 
@@ -150,9 +151,32 @@ class VectorizerWrapper():
             return matrix 
         else: 
             return self.vectorizer.transform(data) 
-        
+
+
+def plot_confusion_matrix(model, X, y, additional_title:str):
+    titles_options = [
+    ("Confusion matrix, without normalization" + additional_title, None),
+    ("Normalized confusion matrix"+ additional_title, "true"),
+    ]
+    for title, normalize in titles_options:
+        disp = ConfusionMatrixDisplay.from_estimator(
+            model,
+            X,
+            y,
+            display_labels=["negative", "neutral", "positive"],
+            cmap=plt.cm.Blues,
+            normalize=normalize,
+        )
+        disp.ax_.set_title(title)
+
+        print(title)
+        print(disp.confusion_matrix)
+    plt.show()
         
 def analyze_model(model, X_val, val_labels, X_test, test_labels):
+    print("Analyzing the model:")
+    print("0 = negative, 1= neutral, 2=positive")
+
     # Predict on validation data
     val_predictions = model.predict(X_val)
     val_f1 = f1_score(val_labels, val_predictions, average="weighted")
@@ -161,7 +185,8 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     val_accuracy = accuracy_score(val_labels, val_predictions)
     print(f'Validation Accuracy: {val_accuracy:.2f}')
 
-    # %%
+    plot_confusion_matrix(model=model, X=X_val, y=val_labels, additional_title="- for val data")
+
     # Predict on test data
     # 0	negative
     # 1	neutral
@@ -173,22 +198,40 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     test_accuracy = accuracy_score(test_labels, test_predictions)
     print(f'Test Accuracy: {test_accuracy:.2f}')
 
-    titles_options = [
-    ("Confusion matrix, without normalization", None),
-    ("Normalized confusion matrix", "true"),
-    ]
-    for title, normalize in titles_options:
-        disp = ConfusionMatrixDisplay.from_estimator(
-            model,
-            X_test,
-            test_labels,
-            display_labels=["negative", "neutral", "positive"],
-            cmap=plt.cm.Blues,
-            normalize=normalize,
-        )
-        disp.ax_.set_title(title)
+    plot_confusion_matrix(model=model, X=X_test, y=test_labels, additional_title="- for test data")
 
-        print(title)
-        print(disp.confusion_matrix)
+    return {"test_accuracy": test_accuracy, "test_f1": test_f1, "val_accuracy": val_accuracy, "val_f1": val_f1}
 
-    plt.show()
+
+def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, X_train, X_val, X_test, train_labels, val_labels, test_labels):
+    for vect_name, vect_args in vectorizer_dict.items(): 
+        vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
+        
+        X_train = vectorizer.fit_transform(X_train, **vect_args)
+
+        # Transform the validation and test data
+        X_val = vectorizer.transform(X_val)
+        X_test = vectorizer.transform(X_test)
+        
+        grid_clf = GridSearchCV(model, parameters, verbose= True)
+        grid_clf.fit(X_train, train_labels)
+        print(sorted(grid_clf.cv_results_.keys()))
+        
+        best_estimator = grid_clf.best_estimator_
+
+        best_params = grid_clf.best_params_
+        estimator_name = best_estimator.__class__.__name__
+        filename =  estimator_name + "_grid_search.txt"
+        with open('models/' + filename, 'w') as file:
+            file.write(vect_name + "\n")
+            for param, value in best_params.items():
+                file.write(f"{param}: {value}\n")
+        
+        analyze_results = analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
+        for metric, value in analyze_results:
+            file.write(f"{metric}: {value}\n")
+        print("Best parameters written to '{}'.".format(filename))
+
+        return grid_clf
+
+

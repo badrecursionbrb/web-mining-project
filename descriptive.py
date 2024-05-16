@@ -17,6 +17,12 @@ test_labels = test_data["label"]
 label_counts = train_data['label'].value_counts()
 print(label_counts)
 
+label_counts = val_data['label'].value_counts()
+print(label_counts)
+
+label_counts = test_data['label'].value_counts()
+print(label_counts)
+
 number_samples = train_data.shape[0]
 
 print(label_counts[0] / number_samples)
