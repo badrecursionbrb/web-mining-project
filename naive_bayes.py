@@ -1,39 +1,57 @@
 #%%
-# imports
+import numpy as np
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics import f1_score
-from functions import load_data, load_datasets
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
+from gensim.models import KeyedVectors  # For Word2Vec
 
-# # Paths to the data
-# train_tweets_path = './preprocessed_data/preprocessed_train.txt'
-# train_labels_path = './datasets/sentiment/train_labels.txt'
-# val_tweets_path = './preprocessed_data/preprocessed_validation.txt'
-# val_labels_path = './datasets/sentiment/val_labels.txt'
-# test_tweets_path = './preprocessed_data/preprocessed_test.txt'
-# test_labels_path = './datasets/sentiment/test_labels.txt'
+from functions import load_datasets
 
-# # Load datasets
-# train_data = load_data(train_tweets_path, train_labels_path)
-# val_data = load_data(val_tweets_path, val_labels_path)
-# test_data = load_data(test_tweets_path, test_labels_path)
 train_data, val_data, test_data = load_datasets()
 
 #%%
-# Create a TF-IDF vectorizer
-vectorizer = TfidfVectorizer(max_features=1000)
+def get_vectorizer(vectorization_type):
+    if vectorization_type == 'tfidf':
+        return TfidfVectorizer(max_features=1000)
+    elif vectorization_type == 'count':
+        return CountVectorizer(max_features=1000)
+    elif vectorization_type == 'word2vec':
+        # Load pre-trained Word2Vec model (this path needs to be adjusted to your actual model path)
+        word_vectors = KeyedVectors.load_word2vec_format('path_to_word2vec.bin', binary=True)
+        return word_vectors
+    else:
+        raise ValueError("Unsupported vectorization type specified.")
 
-# Fit and transform the training data
-X_train = vectorizer.fit_transform(train_data['tweet'])
+def vectorize_data(data, vectorizer):
+    if isinstance(vectorizer, TfidfVectorizer) or isinstance(vectorizer, CountVectorizer):
+        return vectorizer.transform(data['tweet'])
+    elif isinstance(vectorizer, KeyedVectors):  # Handling Word2Vec
+        # Transform each tweet to an average Word2Vec vector
+        def tweet_to_vector(tweet):
+            words = tweet.split()
+            word_vectors = [vectorizer[word] for word in words if word in vectorizer]
+            if not word_vectors:
+                return np.zeros(vectorizer.vector_size)
+            return np.mean(word_vectors, axis=0)
+        return np.array([tweet_to_vector(tweet) for tweet in data['tweet']])
+    else:
+        raise ValueError("Unsupported vectorizer instance.")
 
-# Transform the validation and test data
-X_val = vectorizer.transform(val_data['tweet'])
-X_test = vectorizer.transform(test_data['tweet'])
+# Example usage
+vectorization_type = 'count'  # Change to 'tfidf', 'count', or 'word2vec'
+vectorizer = get_vectorizer(vectorization_type)
+vectorizer.fit(train_data['tweet'])
+
+# Fit and transform data
+X_train = vectorize_data(train_data, vectorizer)
+X_val = vectorize_data(val_data, vectorizer)
+X_test = vectorize_data(test_data, vectorizer)
 
 #%%
 # Create and train the Naive Bayes model
-model = MultinomialNB()
+model = MultinomialNB() if vectorization_type != 'word2vec' else LogisticRegression()
 model.fit(X_train, train_data['label'])
 
 # Predict on validation data

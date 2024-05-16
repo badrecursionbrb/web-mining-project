@@ -38,7 +38,7 @@ svm_model = SVC()
 
 param_grid = {
     'C': [0.001, 0.01, 0.1, 1, 10, 100],  # Regularization parameter
-    'kernel': ['linear']  # Type of kernel
+    'kernel': ['linear']  # Type of kernels
 }
 
 # Set up GridSearchCV
@@ -57,4 +57,9 @@ print(f'Best SVM Validation F1 Score: {val_f1_score:.2f}')
 test_predictions = best_svm.predict(X_test)
 test_f1_score = f1_score(test_data['label'], test_predictions, average='weighted')
 print(f'Test F1 Score: {test_f1_score:.2f}')
+
+# %%
+# Output the parameters of the best model
+best_params = grid_search.best_params_
+print(f'Best Model Parameters: {best_params}')
 # %%
