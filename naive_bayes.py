@@ -70,20 +70,21 @@ val_predictions = model.predict(X_val)
 val_f1 = f1_score(val_data['label'], val_predictions, average="weighted")
 print(f'Validation F1: {val_f1:.2f}')
 
-
+val_accuracy = accuracy_score(val_data['label'], val_predictions)
+print(f'Validation Accuracy: {val_accuracy:.2f}')
 #%%
-# Create and train the Naive Bayes model
+# Create and train the Naive Bayes model #TODO Why here another model fit?
 model = MultinomialNB()
 model.fit(X_train, train_data['label'])
 
-# Predict on validation data
+# Predict on test data
 test_predictions = model.predict(X_test)
 test_f1 = f1_score(test_data['label'], test_predictions, average="weighted")
-print(f'Validation F1: {test_f1:.2f}')
+print(f'test F1: {test_f1:.2f}')
 
 # %%
-val_accuracy = accuracy_score(val_data['label'], val_predictions)
-print(f'Validation Accuracy: {val_accuracy:.2f}')
+test_accuracy = accuracy_score(test_data['label'], test_predictions)
+print(f'test Accuracy: {test_accuracy:.2f}')
 
 #%% 
 # grid search for Multinomial NB 

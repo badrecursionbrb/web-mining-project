@@ -1,11 +1,19 @@
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import ConfusionMatrixDisplay
+
 from gensim.models import Word2Vec, Doc2Vec, KeyedVectors
 from gensim.models.doc2vec import TaggedDocument
 from gensim.test.utils import datapath
 import gensim.downloader as api
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+
 import spacy
-import numpy as np
+
+
 
 
 SPACY_CORPUS = "en_core_web_sm"
@@ -144,4 +152,43 @@ class VectorizerWrapper():
             return self.vectorizer.transform(data) 
         
         
+def analyze_model(model, X_val, val_labels, X_test, test_labels):
+    # Predict on validation data
+    val_predictions = model.predict(X_val)
+    val_f1 = f1_score(val_labels, val_predictions, average="weighted")
+    print(f'Validation F1: {val_f1:.2f}')
 
+    val_accuracy = accuracy_score(val_labels, val_predictions)
+    print(f'Validation Accuracy: {val_accuracy:.2f}')
+
+    # %%
+    # Predict on test data
+    # 0	negative
+    # 1	neutral
+    # 2	positive
+    test_predictions = model.predict(X_test)
+    test_f1 = f1_score(test_labels, test_predictions, average="weighted")
+    print(f'Test F1: {test_f1:.2f}')
+
+    test_accuracy = accuracy_score(test_labels, test_predictions)
+    print(f'Test Accuracy: {test_accuracy:.2f}')
+
+    titles_options = [
+    ("Confusion matrix, without normalization", None),
+    ("Normalized confusion matrix", "true"),
+    ]
+    for title, normalize in titles_options:
+        disp = ConfusionMatrixDisplay.from_estimator(
+            model,
+            X_test,
+            test_labels,
+            display_labels=["negative", "neutral", "positive"],
+            cmap=plt.cm.Blues,
+            normalize=normalize,
+        )
+        disp.ax_.set_title(title)
+
+        print(title)
+        print(disp.confusion_matrix)
+
+    plt.show()

@@ -33,24 +33,21 @@ val_predictions = model.predict(X_val)
 val_f1 = f1_score(val_data['label'], val_predictions, average="weighted")
 print(f'Validation F1: {val_f1:.2f}')
 
-
-#%%
-# Create and train the Naive Bayes model
-model = MultinomialNB()
-model.fit(X_train, train_data['label'])
-
-# Predict on validation data
-test_predictions = model.predict(X_test)
-test_f1 = f1_score(test_data['label'], test_predictions, average="weighted")
-print(f'Validation F1: {test_f1:.2f}')
-
-# %%
 val_accuracy = accuracy_score(val_data['label'], val_predictions)
 print(f'Validation Accuracy: {val_accuracy:.2f}')
 
+# %%
+# Predict on test data
+test_predictions = model.predict(X_test)
+test_f1 = f1_score(test_data['label'], test_predictions, average="weighted")
+print(f'Test F1: {test_f1:.2f}')
+
+test_accuracy = accuracy_score(test_data['label'], test_predictions)
+print(f'Test Accuracy: {test_accuracy:.2f}')
+
 #%% 
 # grid search for Multinomial NB 
-vectorizer_dict = {"tfidf": {'max_features': 20000, 'max_df':0.8}, "count": {'max_features': 20000, 'max_df':0.8}}
+vectorizer_dict = {"tfidf": {'max_features': 5000, 'max_df':0.8}, "count": {'max_features': 5000, 'max_df':0.8}}
 for vect_name, vect_args in vectorizer_dict.items(): 
     vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
 
@@ -69,7 +66,7 @@ for vect_name, vect_args in vectorizer_dict.items():
     
 #%% 
 # grid search for Categorical NB 
-vectorizer_dict = {"tfidf": {'max_features': 20000, 'max_df':0.8}, "count": {'max_features': 20000, 'max_df':0.8}}
+vectorizer_dict = {"tfidf": {'max_features': 5000, 'max_df':0.8}, "count": {'max_features': 5000, 'max_df':0.8}}
 for vect_name, vect_args in vectorizer_dict.items(): 
     vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
 
