@@ -1,4 +1,7 @@
 # %%
+import subprocess
+from datetime import datetime
+
 import pandas as pd
 import numpy as np
 import torch
@@ -265,6 +268,7 @@ model.eval()'''
 #######################################################################################################################
 # %%
 
+direction = "minimize"
 # learning rate  5e-5, 4e-5, 3e-5, and 2e-5 5e-4
 # epochs 3 5
 
@@ -275,9 +279,8 @@ def model_init():
 def optuna_hp_space(trial: Trial):
     return {
         "learning_rate": trial.suggest_float("learning_rate", 1e-6, 1e-4, log=True),
-        "num_train_epochs": trial.suggest_int("per_device_train_batch_size", 2, 5),
+        "num_train_epochs": trial.suggest_int("num_train_epochs", 2, 5),
         "evaluation_strategy": trial.suggest_categorical("evaluation_rate", ["steps", "epoch"])
-
     }
 
 # def compute_objective(metrics):
@@ -321,15 +324,15 @@ trainer = Trainer(
 )
 
 
-
 best_trials = trainer.hyperparameter_search(
-    direction="minimize",
+    direction=direction,
     backend="optuna",
     hp_space=optuna_hp_space,
     n_trials=10
     #compute_objective=compute_objective,
 )
 
+#%%
 print("Best trial: {}".format(best_trials.objective))
 
 print("with parameters:")
@@ -339,4 +342,59 @@ for key, value in best_trials.hyperparameters.items():
 
 # optuna dashboard command
 #  optuna-dashboard sqlite:///db.sqlite3
+# %%
+
+def objective(trial: Trial):
+
+    training_args = TrainingArguments(
+        output_dir='./results',
+        #num_train_epochs=3,
+        per_device_train_batch_size=32,
+        per_device_eval_batch_size=64,
+        warmup_steps=500,
+        #learning_rate=5e-5,
+        weight_decay=0.01,
+        logging_dir='./logs',
+        logging_steps=250,
+        #gradient_accumulation_steps=2,
+        dataloader_pin_memory = False,
+        #load_best_model_at_end=True,
+        metric_for_best_model="f1",
+
+        #evaluation_strategy="steps",
+
+        learning_rate= trial.suggest_float("learning_rate", 1e-6, 1e-4, log=True),
+        num_train_epochs= trial.suggest_int("num_train_epochs", 2, 5),
+        evaluation_strategy= trial.suggest_categorical("evaluation_rate", ["steps", "epoch"])
+    )
+    
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=val_dataset,
+        compute_metrics=compute_metrics
+    )
+
+    trainer.train()
+    eval_result = trainer.evaluate()
+
+    return eval_result["eval_loss"] 
+
+
+#%%
+# Run study
+
+now = datetime.now()
+formatted_time = now.strftime('%Y-%m-%d-%H-%M-%S')
+
+study_name = "RoBERTa_optimization_" + formatted_time
+storage_name = f"sqlite:///{study_name}.db"
+study = optuna.create_study(study_name=study_name, storage=storage_name, direction=direction)
+
+# launching dashboard
+subprocess.run(["optuna-dashboard", storage_name])
+
+study.optimize(objective, n_trials=20)
+
 # %%
