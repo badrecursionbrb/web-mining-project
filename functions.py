@@ -254,7 +254,7 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         
         analyze_results = analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
 
-        write_to_file(estimator_name=estimator_name, vect_name=vect_name, best_params=best_params, analyze_results=analyze_results)
+        write_to_file(estimator_name=estimator_name, vect_name=vect_name, best_params=best_params, analyze_results=analyze_results, params_grid=parameters)
 
         return grid_clf
 
