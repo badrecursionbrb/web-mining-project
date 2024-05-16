@@ -6,8 +6,7 @@ import gensim.downloader as api
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import spacy
 import numpy as np
-import fasttext
-import fasttext.util
+
 
 SPACY_CORPUS = "en_core_web_sm"
 
@@ -30,7 +29,10 @@ def load_data(tweets_path, labels_path):
         labels = [int(label.strip()) for label in labels]
     return pd.DataFrame({'tweet': tweets, 'label': labels})
 
-def load_datasets(use_joined=True): 
+def load_datasets(vectorizer_name, use_joined=True): 
+    if vectorizer_name in {"word2vec", "fasttext"}:
+        use_joined = False
+
     train_path = TRAIN_TWEETS_PATH
     valid_path = VAL_TWEETS_PATH
     test_path = TEST_TWEETS_PATH
@@ -89,6 +91,8 @@ class VectorizerWrapper():
             self.vectorizer = doc2vec_model
             return self.transform(data)
         elif self.vectorizer_name == "fasttext":
+            import fasttext
+            import fasttext.util
             model_path = "./datasets/cc.en.300.bin"
             fasttext_model = fasttext.load_model(model_path)
             self.dims= 100 # setting dims here manually 

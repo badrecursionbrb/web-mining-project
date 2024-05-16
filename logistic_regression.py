@@ -3,7 +3,7 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score
 from functions import load_data, load_datasets, VectorizerWrapper
 
 from sklearn import svm, datasets
@@ -13,33 +13,14 @@ from sklearn.model_selection import GridSearchCV
 
 #%%
 
-#vectorizer = TfidfVectorizer(max_features=1000)
 
-# Fit and transform the training data
-# Create a TF-IDF vectorizer
-# train_data, val_data, test_data = load_datasets(use_joined=True)
-# vectorizer = VectorizerWrapper(vectorizer_name="tfidf")
-# X_train = vectorizer.fit_transform(train_data['tweet'], max_features=20000, max_df=0.8)
+vectorizer_name = "word2vec"
+vectorizer = VectorizerWrapper(vectorizer_name=vectorizer_name)
 
-# # count vectorizer version
-# train_data, val_data, test_data = load_datasets(use_joined=True)
-# vectorizer = VectorizerWrapper(vectorizer_name="count")
-# X_train = vectorizer.fit_transform(train_data['tweet'], max_features=20000, max_df=0.8)
+train_data, val_data, test_data = load_datasets(vectorizer_name=vectorizer_name)
 
-# # gensim word2vec vectorizer 
-train_data, val_data, test_data = load_datasets(use_joined=False)
-vectorizer = VectorizerWrapper(vectorizer_name="word2vec")
 X_train = vectorizer.fit_transform(train_data['tweet'])
 
-# use fasttext vectorizer
-# train_data, val_data, test_data = load_datasets(use_joined=False)
-# vectorizer = VectorizerWrapper(vectorizer_name="fasttext")
-# X_train = vectorizer.fit_transform(train_data['tweet'])
-
-# spacy vectorizer
-# train_data, val_data, test_data = load_datasets(use_joined=True)
-# vectorizer = VectorizerWrapper(vectorizer_name="spacy")
-# X_train = vectorizer.fit_transform(train_data['tweet'])
 
 
 # Transform the validation and test data
@@ -55,10 +36,17 @@ X_test = vectorizer.transform(test_data['tweet'])
 model = LogisticRegression(multi_class="ovr")
 model.fit(X_train, train_data['label'])
 
+
 # Predict on validation data
-val_predictions = model.predict(X_val)
+test_predictions = model.predict(X_test)
+test_f1 = f1_score(test_data['label'], test_predictions, average="weighted")
+print(f'Validation F1: {test_f1:.2f}')
+
+# %%
 val_accuracy = accuracy_score(val_data['label'], val_predictions)
 print(f'Validation Accuracy: {val_accuracy:.2f}')
+
+
 
 #%% 
 
