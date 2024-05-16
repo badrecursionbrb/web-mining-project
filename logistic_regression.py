@@ -10,7 +10,7 @@ from sklearn import svm, datasets
 from sklearn.model_selection import GridSearchCV
 
 #%%
-vectorizer_name = "word2vec"
+vectorizer_name = "tfidf"
 vectorizer = VectorizerWrapper(vectorizer_name=vectorizer_name)
 
 train_data, val_data, test_data = load_datasets(vectorizer_name=vectorizer_name)
@@ -47,6 +47,6 @@ parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l2',), 'solver'
 # parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l1', 'l2', 'elasticnet'), 'solver': ('newton-cg', 'sag', 'saga', 'lbfgs'), 'max_iter': (1000,)}
 
 grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
-                            X_train=X_train, X_val=X_val, X_test=X_test, train_labels=train_labels, val_labels=val_labels, test_labels=test_labels)
+                            train_data=train_data, val_data=val_data, test_data=test_data)
 
 # %%

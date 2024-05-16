@@ -174,7 +174,8 @@ def plot_confusion_matrix(model, X, y, additional_title:str):
         print(title)
         print(disp.confusion_matrix)
     plt.show()
-        
+
+
 def analyze_model(model, X_val, val_labels, X_test, test_labels):
     print("Analyzing the model:")
     print("0 = negative, 1= neutral, 2=positive")
@@ -222,15 +223,22 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
 
 
 
-def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, X_train, X_val, X_test, train_labels, val_labels, test_labels):
+def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data):
+    X_train_orig = train_data['tweet']
+    X_val_orig = val_data['tweet']
+    X_test_orig = test_data['tweet']
+    train_labels = train_data['label']
+    val_labels = val_data['label']
+    test_labels = test_data['label']
+    
     for vect_name, vect_args in vectorizer_dict.items(): 
         vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
         
-        X_train = vectorizer.fit_transform(X_train, **vect_args)
-
+        #fit transform train data
+        X_train = vectorizer.fit_transform(X_train_orig, **vect_args)
         # Transform the validation and test data
-        X_val = vectorizer.transform(X_val)
-        X_test = vectorizer.transform(X_test)
+        X_val = vectorizer.transform(X_val_orig)
+        X_test = vectorizer.transform(X_test_orig)
         
         grid_clf = GridSearchCV(model, parameters, verbose= True)
         grid_clf.fit(X_train, train_labels)
