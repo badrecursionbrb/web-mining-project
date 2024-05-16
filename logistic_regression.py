@@ -42,9 +42,9 @@ print(sorted(grid_clf.cv_results_.keys()))
 
 # %%
 
-vectorizer_dict = {"tfidf": {'max_df':0.8}}#, "count": {'max_features': 5000, 'max_df':0.8}}
-parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l2',), 'solver': ('lbfgs',), 'max_iter': (1000,)}
-# parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l1', 'l2', 'elasticnet'), 'solver': ('newton-cg', 'sag', 'saga', 'lbfgs'), 'max_iter': (1000,)}
+vectorizer_dict = {"word2vec": {}, "fasttext": {}, "spacy": {}, "tfidf": {'max_df':0.8}, "count": {'max_df':0.8}, }
+#parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l2',), 'solver': ('lbfgs',), 'max_iter': (1000,)}
+parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l1', 'l2', 'elasticnet'), 'solver': ('newton-cg', 'sag', 'saga', 'lbfgs'), 'max_iter': (1000,)}
 
 grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
                             train_data=train_data, val_data=val_data, test_data=test_data)
