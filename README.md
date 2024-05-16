@@ -18,3 +18,7 @@ nltk.download('stopwords')
 import fasttext.util
 fasttext.util.download_model('en', if_exists='ignore')  # English
 #ft = fasttext.load_model('cc.en.300.bin')# %%
+
+## Optuna Dashboard
+The Optuna Dashboard is reachable by the URL: 
+ http://localhost:8080/
