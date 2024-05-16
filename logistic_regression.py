@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score
-from functions import load_data, load_datasets, VectorizerWrapper, analyze_model, meta_grid_search
+from functions import load_data, load_datasets, VectorizerWrapper, analyze_model, meta_grid_search, write_to_file
 
 from sklearn import svm, datasets
 from sklearn.model_selection import GridSearchCV
@@ -35,10 +35,18 @@ results = analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=
 
 #%% 
 parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l1', 'l2', 'elasticnet'), 'solver': ('newton-cg', 'sag', 'saga', 'lbfgs'), 'max_iter': (1000,)}
+parameters = {'multi_class':('ovr', 'multinomial'), 'max_iter': (1000, )}
 
 grid_clf = GridSearchCV(model, parameters, verbose=True)
 grid_clf.fit(X_train, train_data['label'])
 print(sorted(grid_clf.cv_results_.keys()))
+
+best_estimator = grid_clf.best_estimator_
+
+best_params = grid_clf.best_params_
+estimator_name = best_estimator.__class__.__name__
+write_to_file(estimator_name=estimator_name, vect_name=vectorizer_name, best_params=best_params, analyze_results={"metric": grid_clf.best_score_}, params_grid=parameters)
+
 
 # %%
 

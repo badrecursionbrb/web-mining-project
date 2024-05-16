@@ -215,9 +215,11 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
         for param, value in best_params.items():
             file.write(f"{param}: {value}\n")
 
+        file.write("Metrics achieved: \n")
         for metric, value in analyze_results.items():
             file.write(f"{metric}: {value}\n")
         
+        file.write("Parameters of grid search: \n")
         for param, param_vals in params_grid.items():
             file.write(f"{param}: {param_vals}\n")
 
