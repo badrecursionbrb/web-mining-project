@@ -13,3 +13,13 @@ ipykernel
 matplotlib
 emoji
 gensim
+torch
+torchvision
+tensorflow
+transformers
+accelerate
+ipykernel
+fasttext
+evaluate
+optuna
+optuna-dashboard
