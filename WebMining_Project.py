@@ -73,20 +73,20 @@ print("train_text: " + str(len(train_text)) + ", train_labels: " + str(len(train
 
 
 def tokenize_function(text):
-  tokenized_list = []
+    tokenized_list = []
 
-  # extract text
-  for t in text:
-      tokenized_text = tokenizer(
-          t,
-          return_tensors='pt',
-          truncation=True,
-          padding=True,
-          max_length=512
-          )
-      tokenized_list.append(tokenized_text)
+    # extract text
+    for t in text:
+        tokenized_text = tokenizer(
+            t,
+            return_tensors='pt',
+            truncation=True,
+            padding=True,
+            max_length=512
+            )
+        tokenized_list.append(tokenized_text)
 
-  return tokenized_list
+    return tokenized_list
 
 
 # %%
