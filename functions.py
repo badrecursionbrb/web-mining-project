@@ -102,7 +102,7 @@ class VectorizerWrapper():
         elif self.vectorizer_name == "fasttext":
             import fasttext
             import fasttext.util
-            model_path = "./datasets/cc.en.300.bin"
+            model_path = "./cc.en.300.bin"
             fasttext_model = fasttext.load_model(model_path)
             self.dims= 100 # setting dims here manually 
             fasttext.util.reduce_model(fasttext_model, self.dims)
@@ -223,7 +223,7 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
     if not filename:
         filename = create_filename(estimator_name=estimator_name)
     with open('models/' + filename, 'a') as file:
-        file.write(estimator_name + "\n")
+        file.write("\n" + estimator_name + "\n")
         file.write(vect_name + " with args: " + str(vect_args) + "\n" )
         for param, value in best_params.items():
             file.write(f"{param}: {value}\n")

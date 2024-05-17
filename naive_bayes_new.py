@@ -55,14 +55,6 @@ model = MultinomialNB()
 grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
                             train_data=train_data, val_data=val_data, test_data=test_data)
 
-#%% 
-# grid search for Categorical NB 
-vectorizer_dict = {"tfidf": {'max_features': 7000, 'max_df':0.8}, "count": {'max_features': 7000, 'max_df':0.8}}
-parameters = {'alpha': (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)}
-model = CategoricalNB()
-
-grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
-                            train_data=train_data, val_data=val_data, test_data=test_data)
 
 
 #%% 
