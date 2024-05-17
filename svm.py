@@ -42,8 +42,9 @@ param_grid = {
 }
 
 # Set up GridSearchCV
-grid_search = GridSearchCV(svm_model, param_grid, cv=5, verbose=2, scoring='f1_weighted')
+grid_search = GridSearchCV(svm_model, param_grid, cv=5, verbose=2, scoring='f1_weighted', return_train_score=True)
 grid_search.fit(X_train, train_data['label'])
+print(sorted(grid_search.cv_results_.keys()))
 
 #%%
 # evaluate best model

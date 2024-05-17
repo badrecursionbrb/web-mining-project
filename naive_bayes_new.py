@@ -36,7 +36,7 @@ analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, te
 parameters = {'alpha': (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)}
 
 model = MultinomialNB()
-grid_clf = GridSearchCV(model, parameters, verbose=True, scoring='accuracy')
+grid_clf = GridSearchCV(model, parameters, verbose=True, scoring='f1_weighted', return_train_score=True)
 grid_clf.fit(X_train, train_data['label'])
 print(sorted(grid_clf.cv_results_.keys()))
 
@@ -44,6 +44,7 @@ best_estimator = grid_clf.best_estimator_
 
 best_params = grid_clf.best_params_
 estimator_name = best_estimator.__class__.__name__
+
 write_to_file(estimator_name=estimator_name, vect_name=vectorizer_name, best_params=best_params, analyze_results={"metric": grid_clf.best_score_}, params_grid=parameters)
 
 #%% 
@@ -56,7 +57,6 @@ grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_di
                             train_data=train_data, val_data=val_data, test_data=test_data)
 
 
-
 #%% 
 # grid search for Gaussian NB 
 vectorizer_dict = {"word2vec": {}, "fasttext": {}, "spacy": {}}
@@ -65,8 +65,6 @@ model = GaussianNB()
 
 grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
                             train_data=train_data, val_data=val_data, test_data=test_data)
-
-
 
 
 # %%

@@ -219,22 +219,28 @@ def create_filename(estimator_name):
     return filename
 
 
-def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict, params_grid: dict= {}, filename=None, vect_args={}):
+def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict, params_grid: dict= {}, filename=None, vect_args={}, grid_clf={}):
     if not filename:
         filename = create_filename(estimator_name=estimator_name)
     with open('models/' + filename, 'a') as file:
         file.write("\n" + estimator_name + "\n")
-        file.write(vect_name + " with args: " + str(vect_args) + "\n" )
+        file.write("\t" + vect_name + " with args: " + str(vect_args) + "\n" )
         for param, value in best_params.items():
-            file.write(f"{param}: {value}\n")
+            file.write(f"\t\t{param}: {value}\n")
 
-        file.write("Metrics achieved: \n")
+        file.write("\tMetrics achieved: \n")
         for metric, value in analyze_results.items():
-            file.write(f"{metric}: {value}\n")
-        
-        file.write("Parameters of grid search: \n")
+            file.write(f"\t{metric}: {value}\n")
+
+        file.write("\tGrid search keys: \n")
+        for metric, value in grid_clf.cv_results_.items():
+            value = " ".join(str(val) for val in value)
+            file.write(f"\t\t\t{metric}: {value}\n")
+
+        file.write("\tParameters of grid search: \n")
         for param, param_vals in params_grid.items():
-            file.write(f"{param}: {param_vals}\n")
+            file.write(f"\t\t{param}: {param_vals}\n")
+
 
     print("Best parameters written to '{}'".format(filename))
 
@@ -258,18 +264,18 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         X_val = vectorizer.transform(X_val_orig)
         X_test = vectorizer.transform(X_test_orig)
         
-        grid_clf = GridSearchCV(model, parameters, verbose= True, scoring=scoring_metric, cv=cv)
+        grid_clf = GridSearchCV(model, parameters, verbose= True, scoring=scoring_metric, cv=cv, return_train_score=True)
         grid_clf.fit(X_train, train_labels)
         print(sorted(grid_clf.cv_results_.keys()))
         
         best_estimator = grid_clf.best_estimator_
-
+        
         best_params = grid_clf.best_params_
         estimator_name = best_estimator.__class__.__name__
         
         analyze_results = analyze_model(model=best_estimator, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
 
-        write_to_file(estimator_name=estimator_name, vect_name=vect_name, best_params=best_params, analyze_results=analyze_results, params_grid=parameters, filename=filename, vect_args=vect_args)
+        write_to_file(estimator_name=estimator_name, vect_name=vect_name, best_params=best_params, analyze_results=analyze_results, params_grid=parameters, filename=filename, vect_args=vect_args, grid_clf=grid_clf)
 
     return None
 
