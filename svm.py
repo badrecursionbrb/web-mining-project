@@ -5,62 +5,54 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import SVC
 from sklearn.metrics import f1_score
 from sklearn.model_selection import GridSearchCV
-from functions import load_data, load_datasets
-
-# Paths to the data
-# train_tweets_path = './preprocessed_data/preprocessed_train.txt'
-# train_labels_path = './datasets/sentiment/train_labels.txt'
-# val_tweets_path = './preprocessed_data/preprocessed_validation.txt'
-# val_labels_path = './datasets/sentiment/val_labels.txt'
-# test_tweets_path = './preprocessed_data/preprocessed_test.txt'
-# test_labels_path = './datasets/sentiment/test_labels.txt'
-
-# # Load datasets
-# train_data = load_data(train_tweets_path, train_labels_path)
-# val_data = load_data(val_tweets_path, val_labels_path)
-# test_data = load_data(test_tweets_path, test_labels_path)
-
-train_data, val_data, test_data = load_datasets()
+from functions import load_datasets, VectorizerWrapper, analyze_model, meta_grid_search, write_to_file
 
 #%%
-# Create a TF-IDF vectorizer
-vectorizer = TfidfVectorizer(max_features=1000)
+vectorizer_name = "tfidf"
+vectorizer = VectorizerWrapper(vectorizer_name=vectorizer_name)
 
-# Fit and transform the training data
-X_train = vectorizer.fit_transform(train_data['tweet'])
+train_data, val_data, test_data = load_datasets(vectorizer_name=vectorizer_name)
+
+X_train = vectorizer.fit_transform(train_data['tweet'], max_features=10000)
 
 # Transform the validation and test data
 X_val = vectorizer.transform(val_data['tweet'])
 X_test = vectorizer.transform(test_data['tweet'])
+train_labels = train_data['label']
+val_labels = val_data['label']
+test_labels = test_data['label']
 
 #%%
-svm_model = SVC()
+model = SVC()
+model.fit(X_train, train_data['label'])
 
-param_grid = {
+#%%
+# Analyze the model 
+analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
+
+#%%
+parameters = {
     'C': [0.001, 0.01, 0.1, 1, 10, 100],  # Regularization parameter
     'kernel': ['linear']  # Type of kernels
 }
+model = SVC()
+grid_clf = GridSearchCV(model, parameters, cv=5, verbose=2, scoring='f1_weighted')
+grid_clf.fit(X_train, train_data['label'])
+print(sorted(grid_clf.cv_results_.keys()))
 
-# Set up GridSearchCV
-grid_search = GridSearchCV(svm_model, param_grid, cv=5, verbose=2, scoring='f1_weighted', return_train_score=True)
-grid_search.fit(X_train, train_data['label'])
-print(sorted(grid_search.cv_results_.keys()))
+best_estimator = grid_clf.best_estimator_
+
+best_params = grid_clf.best_params_
+estimator_name = best_estimator.__class__.__name__
+write_to_file(estimator_name=estimator_name, vect_name=vectorizer_name, best_params=best_params, analyze_results={"metric": grid_clf.best_score_}, params_grid=parameters)
 
 #%%
 # evaluate best model
-best_svm = grid_search.best_estimator_
-val_predictions = best_svm.predict(X_val)
-val_f1_score = f1_score(val_data['label'], val_predictions, average='weighted')
-print(f'Best SVM Validation F1 Score: {val_f1_score:.2f}')
-
-#%%
-# Final testing using F1 score
-test_predictions = best_svm.predict(X_test)
-test_f1_score = f1_score(test_data['label'], test_predictions, average='weighted')
-print(f'Test F1 Score: {test_f1_score:.2f}')
-
-# %%
-# Output the parameters of the best model
-best_params = grid_search.best_params_
-print(f'Best Model Parameters: {best_params}')
+vectorizer_dict = {"tfidf": {'max_features': 7000, 'max_df':0.8}, "count": {'max_features': 7000, 'max_df':0.8}, "word2vec": {}, "fasttext": {}, "spacy": {}}
+parameters = {
+    'C': [0.001, 0.01, 0.1, 1, 10, 100],  # Regularization parameter
+    'kernel': ['linear']  # Type of kernels
+}
+grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
+                            train_data=train_data, val_data=val_data, test_data=test_data)
 # %%

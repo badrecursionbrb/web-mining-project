@@ -1,11 +1,6 @@
 #%%
-import numpy as np
-import pandas as pd
-
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from sklearn.naive_bayes import MultinomialNB, CategoricalNB, GaussianNB
-from sklearn.metrics import accuracy_score, f1_score
-from functions import load_data, load_datasets, VectorizerWrapper, analyze_model, meta_grid_search, write_to_file
+from sklearn.naive_bayes import MultinomialNB, GaussianNB
+from functions import load_datasets, VectorizerWrapper, analyze_model, meta_grid_search, write_to_file
 from sklearn.model_selection import GridSearchCV
 
 #%%
