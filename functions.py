@@ -174,22 +174,36 @@ def plot_confusion_matrix(model, X, y, additional_title:str):
     plt.show()
 
 
-def analyze_model(model, X_val, val_labels, X_test, test_labels):
+def print_scores(s:str, y_true, y_pred):
+    print("Printing results for the model for {}".format(s))
+    f1 = f1_score(y_true, y_pred, average="weighted")
+    print(s + f' F1: {f1:.4f}')
+
+    accuracy = accuracy_score(y_true, y_pred)
+    print(s + f' Accuracy: {accuracy:.4f}')
+
+    recall = recall_score(y_true, y_pred, average="weighted")
+    print(s + f' Recall: {recall:.4f}')
+
+    return {s + "_accuracy": accuracy, s + "_f1": f1, s + "_recall": recall}
+
+
+def analyze_model(model, X_val, val_labels, X_test, test_labels, plot_conf_mats=True):
     print("Analyzing the model:")
     print("0 = negative, 1= neutral, 2=positive")
 
     # Predict on validation data
     val_predictions = model.predict(X_val)
     val_f1 = f1_score(val_labels, val_predictions, average="weighted")
-    print(f'Validation F1: {val_f1:.2f}')
+    print(f'Validation F1: {val_f1:.4f}')
 
     val_accuracy = accuracy_score(val_labels, val_predictions)
-    print(f'Validation Accuracy: {val_accuracy:.2f}')
+    print(f'Validation Accuracy: {val_accuracy:.4f}')
 
     val_recall = recall_score(val_labels, val_predictions, average="weighted")
-    print(f'Validation Recall: {val_recall:.2f}')
-
-    plot_confusion_matrix(model=model, X=X_val, y=val_labels, additional_title="- for val data")
+    print(f'Validation Recall: {val_recall:.4f}')
+    if plot_conf_mats:
+        plot_confusion_matrix(model=model, X=X_val, y=val_labels, additional_title="- for val data")
 
     # Predict on test data
     # 0	negative
@@ -197,15 +211,16 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     # 2	positive
     test_predictions = model.predict(X_test)
     test_f1 = f1_score(test_labels, test_predictions, average="weighted")
-    print(f'Test F1: {test_f1:.2f}')
+    print(f'Test F1: {test_f1:.4f}')
 
     test_accuracy = accuracy_score(test_labels, test_predictions)
-    print(f'Test Accuracy: {test_accuracy:.2f}')
+    print(f'Test Accuracy: {test_accuracy:.4f}')
 
     test_recall = recall_score(test_labels, test_predictions, average="weighted")
-    print(f'Validation Recall: {test_recall:.2f}')
-
-    plot_confusion_matrix(model=model, X=X_test, y=test_labels, additional_title="- for test data")
+    print(f'Validation Recall: {test_recall:.4f}')
+    
+    if plot_conf_mats:
+        plot_confusion_matrix(model=model, X=X_test, y=test_labels, additional_title="- for test data")
 
     return {"test_accuracy": test_accuracy, "test_f1": test_f1, "test_recall": test_recall,
                 "val_accuracy": val_accuracy, "val_f1": val_f1, "val_recall": val_recall}
@@ -246,18 +261,19 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
 
 
 def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data, scoring_metric='f1_weighted', cv=5):
-    X_train_orig = train_data['tweet']
-    X_val_orig = val_data['tweet']
-    X_test_orig = test_data['tweet']
-    train_labels = train_data['label']
-    val_labels = val_data['label']
-    test_labels = test_data['label']
 
     filename = create_filename(estimator_name=model.__class__.__name__)
     
     for vect_name, vect_args in vectorizer_dict.items(): 
         vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
-        
+        train_data, val_data, test_data = load_datasets(vectorizer_name=vect_name)
+        X_train_orig = train_data['tweet']
+        X_val_orig = val_data['tweet']
+        X_test_orig = test_data['tweet']
+        train_labels = train_data['label']
+        val_labels = val_data['label']
+        test_labels = test_data['label']
+
         #fit transform train data
         X_train = vectorizer.fit_transform(X_train_orig, **vect_args)
         # Transform the validation and test data
