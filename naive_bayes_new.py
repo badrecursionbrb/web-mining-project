@@ -31,8 +31,10 @@ analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, te
 parameters = {'alpha': (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)}
 
 model = MultinomialNB()
-grid_clf = GridSearchCV(model, parameters, verbose=True, scoring='f1_weighted', return_train_score=True, n_jobs=-1)
+grid_clf = GridSearchCV(model, parameters, verbose=3, scoring='f1_weighted', return_train_score=True, n_jobs=-1)
 grid_clf.fit(X_train, train_data['label'])
+
+#%%
 print(sorted(grid_clf.cv_results_.keys()))
 
 best_estimator = grid_clf.best_estimator_

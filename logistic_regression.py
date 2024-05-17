@@ -38,8 +38,10 @@ results = analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=
 parameters = {'multi_class':('ovr', 'multinomial'), 'penalty': ('l1', 'l2', 'elasticnet'), 'solver': ('newton-cg', 'sag', 'saga', 'lbfgs'), 'max_iter': (1000,)}
 parameters = {'multi_class':('ovr', 'multinomial'), 'max_iter': (1000, )}
 
-grid_clf = GridSearchCV(model, parameters, verbose=True, return_train_score=True, scoring="f1_weighted")
+grid_clf = GridSearchCV(model, parameters, verbose=3, return_train_score=True, scoring="f1_weighted", n_jobs=-1)
 grid_clf.fit(X_train, train_data['label'])
+
+#%%
 print(sorted(grid_clf.cv_results_.keys()))
 
 best_estimator = grid_clf.best_estimator_
