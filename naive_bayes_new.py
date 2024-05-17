@@ -33,7 +33,7 @@ model.fit(X_train, train_data['label'])
 analyze_model(model=model, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
 
 #%% 
-parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+parameters = {'alpha': (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)}
 
 model = MultinomialNB()
 grid_clf = GridSearchCV(model, parameters, verbose=True, scoring='accuracy')
@@ -48,8 +48,8 @@ write_to_file(estimator_name=estimator_name, vect_name=vectorizer_name, best_par
 
 #%% 
 # grid search for Multinomial NB 
-vectorizer_dict = {"tfidf": {'max_features': 5000, 'max_df':0.8}, "count": {'max_features': 5000, 'max_df':0.8}}
-parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+vectorizer_dict = {"tfidf": {'max_features': 7000, 'max_df':0.8}, "count": {'max_features': 7000, 'max_df':0.8}}
+parameters = {'alpha': (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)}
 model = MultinomialNB()
 
 grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
@@ -57,8 +57,8 @@ grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_di
 
 #%% 
 # grid search for Categorical NB 
-vectorizer_dict = {"tfidf": {'max_features': 5000, 'max_df':0.8}, "count": {'max_features': 5000, 'max_df':0.8}}
-parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+vectorizer_dict = {"tfidf": {'max_features': 7000, 'max_df':0.8}, "count": {'max_features': 7000, 'max_df':0.8}}
+parameters = {'alpha': (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)}
 model = CategoricalNB()
 
 grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
@@ -68,7 +68,7 @@ grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_di
 #%% 
 # grid search for Gaussian NB 
 vectorizer_dict = {"word2vec": {}, "fasttext": {}, "spacy": {}}
-parameters = {'alpha': (0.0, 0.25, 0.5, 0.75, 1.0)}
+parameters = {'alpha': (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)}
 model = GaussianNB()
 
 grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
