@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, recall_score
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.model_selection import GridSearchCV
 
@@ -186,6 +186,9 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     val_accuracy = accuracy_score(val_labels, val_predictions)
     print(f'Validation Accuracy: {val_accuracy:.2f}')
 
+    val_recall = recall_score(val_labels, val_predictions)
+    print(f'Validation Recall: {val_recall:.2f}')
+
     plot_confusion_matrix(model=model, X=X_val, y=val_labels, additional_title="- for val data")
 
     # Predict on test data
@@ -199,9 +202,13 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     test_accuracy = accuracy_score(test_labels, test_predictions)
     print(f'Test Accuracy: {test_accuracy:.2f}')
 
+    test_recall = recall_score(test_labels, test_predictions)
+    print(f'Validation Recall: {test_recall:.2f}')
+
     plot_confusion_matrix(model=model, X=X_test, y=test_labels, additional_title="- for test data")
 
-    return {"test_accuracy": test_accuracy, "test_f1": test_f1, "val_accuracy": val_accuracy, "val_f1": val_f1}
+    return {"test_accuracy": test_accuracy, "test_f1": test_f1, "test_recall": test_recall,
+                "val_accuracy": val_accuracy, "val_f1": val_f1, "val_recall": val_recall}
 
 
 def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict, params_grid: dict= {}):
