@@ -15,7 +15,7 @@ vectorizer = VectorizerWrapper(vectorizer_name=vectorizer_name)
 
 train_data, val_data, test_data = load_datasets(vectorizer_name=vectorizer_name)
 
-X_train = vectorizer.fit_transform(train_data['tweet'], max_features=10000)
+X_train = vectorizer.fit_transform(train_data['tweet'], max_features=20000, max_df=0.8)
 
 # Transform the validation and test data
 X_val = vectorizer.transform(val_data['tweet'])
@@ -26,7 +26,8 @@ test_labels = test_data['label']
 
 #%%
 # Create and train the Logistic Regression model
-model = LogisticRegression(multi_class="ovr")
+
+model = LogisticRegression(multi_class="ovr", penalty="l2", solver="sag", max_iter=1000)
 model.fit(X_train, train_data['label'])
 
 #%%

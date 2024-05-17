@@ -211,11 +211,17 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
                 "val_accuracy": val_accuracy, "val_f1": val_f1, "val_recall": val_recall}
 
 
-def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict, params_grid: dict= {}):
+def create_filename(estimator_name):
     now = datetime.now()
     formatted_time = now.strftime('%Y-%m-%d-%H-%M-%S')
 
     filename =  estimator_name + "_grid_search_" + formatted_time + ".txt"
+    return filename
+
+
+def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict, params_grid: dict= {}, filename=None):
+    if not filename:
+        filename = create_filename(estimator_name=estimator_name)
     with open('models/' + filename, 'w') as file:
         file.write(estimator_name + "\n")
         file.write(vect_name + "\n")
@@ -230,7 +236,7 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
         for param, param_vals in params_grid.items():
             file.write(f"{param}: {param_vals}\n")
 
-    print("Best parameters written to '{}' at time: {}.".format(filename, formatted_time))
+    print("Best parameters written to '{}'".format(filename))
 
 
 def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data, scoring_metric='accuracy'):
@@ -240,6 +246,8 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
     train_labels = train_data['label']
     val_labels = val_data['label']
     test_labels = test_data['label']
+
+    filename = create_filename(estimator_name=model.__class__.__name__)
     
     for vect_name, vect_args in vectorizer_dict.items(): 
         vectorizer = VectorizerWrapper(vectorizer_name=vect_name)
@@ -261,8 +269,8 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         
         analyze_results = analyze_model(model=best_estimator, X_val=X_val, val_labels=val_labels, X_test=X_test, test_labels=test_labels)
 
-        write_to_file(estimator_name=estimator_name, vect_name=vect_name, best_params=best_params, analyze_results=analyze_results, params_grid=parameters)
+        write_to_file(estimator_name=estimator_name, vect_name=vect_name, best_params=best_params, analyze_results=analyze_results, params_grid=parameters, filename=filename)
 
-        return grid_clf
+    return None
 
 
