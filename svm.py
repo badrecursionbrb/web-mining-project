@@ -48,6 +48,7 @@ write_to_file(estimator_name=estimator_name, vect_name=vectorizer_name, best_par
 
 #%%
 # evaluate best model
+model = SVC()
 vectorizer_dict = {"tfidf": {'max_features': 7000, 'max_df':0.8}, "count": {'max_features': 7000, 'max_df':0.8}, "word2vec": {}, "fasttext": {}, "spacy": {}}
 parameters = {
     'C': [0.001, 0.01, 0.1, 1, 10, 100],  # Regularization parameter

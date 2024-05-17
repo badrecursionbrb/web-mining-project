@@ -264,7 +264,7 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         X_val = vectorizer.transform(X_val_orig)
         X_test = vectorizer.transform(X_test_orig)
         
-        grid_clf = GridSearchCV(model, parameters, verbose= True, scoring=scoring_metric, cv=cv, return_train_score=True)
+        grid_clf = GridSearchCV(model, parameters, verbose=2, scoring=scoring_metric, cv=cv, return_train_score=True)
         grid_clf.fit(X_train, train_labels)
         print(sorted(grid_clf.cv_results_.keys()))
         
