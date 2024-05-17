@@ -348,7 +348,7 @@ def objective(trial: Trial):
 
         learning_rate= trial.suggest_float("learning_rate", 1e-6, 1e-4, log=True),
         num_train_epochs= trial.suggest_int("num_train_epochs", 2, 5),
-        evaluation_strategy= trial.suggest_categorical("evaluation_rate", ["steps", "epoch"])
+        evaluation_strategy= trial.suggest_categorical("evaluation_strategy", ["steps", "epoch"])
     )
     
     trainer = Trainer(
