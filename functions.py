@@ -186,7 +186,7 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     val_accuracy = accuracy_score(val_labels, val_predictions)
     print(f'Validation Accuracy: {val_accuracy:.2f}')
 
-    val_recall = recall_score(val_labels, val_predictions)
+    val_recall = recall_score(val_labels, val_predictions, average="weighted")
     print(f'Validation Recall: {val_recall:.2f}')
 
     plot_confusion_matrix(model=model, X=X_val, y=val_labels, additional_title="- for val data")
@@ -202,7 +202,7 @@ def analyze_model(model, X_val, val_labels, X_test, test_labels):
     test_accuracy = accuracy_score(test_labels, test_predictions)
     print(f'Test Accuracy: {test_accuracy:.2f}')
 
-    test_recall = recall_score(test_labels, test_predictions)
+    test_recall = recall_score(test_labels, test_predictions, average="weighted")
     print(f'Validation Recall: {test_recall:.2f}')
 
     plot_confusion_matrix(model=model, X=X_test, y=test_labels, additional_title="- for test data")
