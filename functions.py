@@ -219,7 +219,7 @@ def create_filename(estimator_name):
     return filename
 
 
-def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict, params_grid: dict= {}, filename=None, vect_args={}, grid_clf={}):
+def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results: dict, params_grid: dict= {}, filename=None, vect_args={}, grid_clf={'cv_results_': {}}):
     if not filename:
         filename = create_filename(estimator_name=estimator_name)
     with open('models/' + filename, 'a') as file:
@@ -264,7 +264,7 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         X_val = vectorizer.transform(X_val_orig)
         X_test = vectorizer.transform(X_test_orig)
         
-        grid_clf = GridSearchCV(model, parameters, verbose=2, scoring=scoring_metric, cv=cv, return_train_score=True)
+        grid_clf = GridSearchCV(model, parameters, verbose=2, scoring=scoring_metric, cv=cv, return_train_score=True, n_jobs=-1)
         grid_clf.fit(X_train, train_labels)
         print(sorted(grid_clf.cv_results_.keys()))
         

@@ -46,7 +46,7 @@ best_estimator = grid_clf.best_estimator_
 
 best_params = grid_clf.best_params_
 estimator_name = best_estimator.__class__.__name__
-write_to_file(estimator_name=estimator_name, vect_name=vectorizer_name, best_params=best_params, analyze_results={"metric": grid_clf.best_score_}, params_grid=parameters)
+write_to_file(estimator_name=estimator_name, vect_name=vectorizer_name, best_params=best_params, analyze_results={"metric": grid_clf.best_score_}, params_grid=parameters, grid_clf=grid_clf)
 
 
 # %%
