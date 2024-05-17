@@ -239,7 +239,7 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
     print("Best parameters written to '{}'".format(filename))
 
 
-def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data, scoring_metric='accuracy'):
+def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data, scoring_metric='f1_weighted', cv=5):
     X_train_orig = train_data['tweet']
     X_val_orig = val_data['tweet']
     X_test_orig = test_data['tweet']
@@ -258,7 +258,7 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         X_val = vectorizer.transform(X_val_orig)
         X_test = vectorizer.transform(X_test_orig)
         
-        grid_clf = GridSearchCV(model, parameters, verbose= True, scoring=scoring_metric)
+        grid_clf = GridSearchCV(model, parameters, verbose= True, scoring=scoring_metric, cv=cv)
         grid_clf.fit(X_train, train_labels)
         print(sorted(grid_clf.cv_results_.keys()))
         
