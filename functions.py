@@ -102,7 +102,7 @@ class VectorizerWrapper():
         elif self.vectorizer_name == "fasttext":
             import fasttext
             import fasttext.util
-            model_path = "./datasets/cc.en.300.bin"
+            model_path = "./cc.en.300.bin"
             fasttext_model = fasttext.load_model(model_path)
             self.dims= 100 # setting dims here manually 
             fasttext.util.reduce_model(fasttext_model, self.dims)
@@ -223,7 +223,7 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
     if not filename:
         filename = create_filename(estimator_name=estimator_name)
     with open('models/' + filename, 'a') as file:
-        file.write(estimator_name + "\n")
+        file.write("\n" + estimator_name + "\n")
         file.write(vect_name + " with args: " + str(vect_args) + "\n" )
         for param, value in best_params.items():
             file.write(f"{param}: {value}\n")
@@ -239,7 +239,7 @@ def write_to_file(estimator_name, vect_name, best_params: dict, analyze_results:
     print("Best parameters written to '{}'".format(filename))
 
 
-def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data, scoring_metric='accuracy'):
+def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, val_data, test_data, scoring_metric='f1_weighted', cv=5):
     X_train_orig = train_data['tweet']
     X_val_orig = val_data['tweet']
     X_test_orig = test_data['tweet']
@@ -258,7 +258,7 @@ def meta_grid_search(model, parameters:dict, vectorizer_dict: dict, train_data, 
         X_val = vectorizer.transform(X_val_orig)
         X_test = vectorizer.transform(X_test_orig)
         
-        grid_clf = GridSearchCV(model, parameters, verbose= True, scoring=scoring_metric)
+        grid_clf = GridSearchCV(model, parameters, verbose= True, scoring=scoring_metric, cv=cv)
         grid_clf.fit(X_train, train_labels)
         print(sorted(grid_clf.cv_results_.keys()))
         
