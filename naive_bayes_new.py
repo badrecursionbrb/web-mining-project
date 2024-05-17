@@ -68,7 +68,7 @@ grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_di
 #%% 
 # grid search for Gaussian NB 
 vectorizer_dict = {"word2vec": {}, "fasttext": {}, "spacy": {}}
-parameters = {'alpha': (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)}
+parameters = {'var_smoothing': (1e-10, 1e-9, 1e-8)}
 model = GaussianNB()
 
 grid_search_result = meta_grid_search(model=model, vectorizer_dict=vectorizer_dict, parameters=parameters, 
